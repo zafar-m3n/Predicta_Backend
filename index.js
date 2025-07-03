@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const { connectDB } = require("./config/database");
 
+// ✅ Load env variables
 dotenv.config();
 
 // ✅ Connect to Database
@@ -19,12 +20,17 @@ app.use(morgan("dev"));
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173"], // Adjust if needed
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   })
 );
 
+// ✅ Routes
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/v1/auth", authRoutes);
+
+// ✅ Root Route
 app.get("/", (req, res) => {
   res.status(200).json({ message: "API is running..." });
 });
