@@ -1,0 +1,196 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const User = require("../models/User");
+const nodemailer = require("nodemailer");
+require("dotenv").config();
+
+/* ---------- Email transporter ---------- */
+const transporter = nodemailer.createTransport({
+  host: process.env.NODE_TRADERSROOM_EMAIL_HOST,
+  port: process.env.NODE_TRADERSROOM_EMAIL_PORT,
+  secure: true, // true for port 465
+  auth: {
+    user: process.env.NODE_TRADERSROOM_EMAIL_USER,
+    pass: process.env.NODE_TRADERSROOM_EMAIL_PASS,
+  },
+});
+
+/* ---------- Helper: Send email ---------- */
+const sendEmail = async (to, subject, html) => {
+  await transporter.sendMail({
+    from: `"Traders Room" <${process.env.NODE_TRADERSROOM_EMAIL_USER}>`,
+    to,
+    subject,
+    html,
+  });
+};
+
+/* ---------- Step 6: Register ---------- */
+const register = async (req, res) => {
+  const { full_name, email, password } = req.body;
+  try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already in use." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    const verification_token = crypto.randomBytes(32).toString("hex");
+
+    const newUser = await User.create({
+      full_name,
+      email,
+      password_hash,
+      verification_token,
+      role: "client",
+    });
+
+    const verifyUrl = `${process.env.NODE_TRADERSROOM_CLIENT_URL}/verify-email?token=${verification_token}`;
+
+    await sendEmail(
+      email,
+      "Verify your Traders Room account",
+      `<p>Hello ${full_name},</p>
+       <p>Please verify your email by clicking the link below:</p>
+       <a href="${verifyUrl}">${verifyUrl}</a>`
+    );
+
+    res.status(201).json({ message: "Registration successful! Please check your email to verify your account." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/* ---------- Step 7: Email verification ---------- */
+const verifyEmail = async (req, res) => {
+  const { token } = req.query;
+  try {
+    const user = await User.findOne({ where: { verification_token: token } });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired verification token." });
+    }
+
+    user.email_verified = true;
+    user.verification_token = null;
+    await user.save();
+
+    res.status(200).json({ message: "Email verified successfully. You can now log in." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/* ---------- Step 8: Login ---------- */
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password." });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password." });
+    }
+
+    if (!user.email_verified) {
+      return res.status(400).json({ message: "Please verify your email before logging in." });
+    }
+
+    const payload = {
+      id: user.id,
+      role: user.role,
+    };
+
+    const token = jwt.sign(payload, process.env.NODE_TRADERSROOM_JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(200).json({
+      message: "Login successful.",
+      token,
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/* ---------- Step 9: Forgot password ---------- */
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({ message: "User with this email does not exist." });
+    }
+
+    const reset_token = crypto.randomBytes(32).toString("hex");
+    const reset_token_expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    user.reset_token = reset_token;
+    user.reset_token_expiry = reset_token_expiry;
+    await user.save();
+
+    const resetUrl = `${process.env.NODE_TRADERSROOM_CLIENT_URL}/reset-password?token=${reset_token}`;
+
+    await sendEmail(
+      email,
+      "Password Reset Request",
+      `<p>Hello ${user.full_name},</p>
+       <p>Reset your password by clicking the link below:</p>
+       <a href="${resetUrl}">${resetUrl}</a>`
+    );
+
+    res.status(200).json({ message: "Password reset email sent." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/* ---------- Step 10: Reset password ---------- */
+const resetPassword = async (req, res) => {
+  const { token } = req.query;
+  const { password } = req.body;
+  try {
+    const user = await User.findOne({ where: { reset_token: token } });
+    if (!user || user.reset_token_expiry < new Date()) {
+      return res.status(400).json({ message: "Invalid or expired reset token." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    user.password_hash = password_hash;
+    user.reset_token = null;
+    user.reset_token_expiry = null;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful. You can now log in." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/* ---------- Export all functions ---------- */
+module.exports = {
+  register,
+  verifyEmail,
+  login,
+  forgotPassword,
+  resetPassword,
+};
