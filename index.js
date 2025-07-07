@@ -26,9 +26,15 @@ app.use(
   })
 );
 
+// ✅ Serve static uploads folder
+app.use("/uploads", express.static("uploads"));
+
 // ✅ Routes
 const authRoutes = require("./routes/authRoutes");
+const adminDepositRoutes = require("./routes/admin/depositRoutes");
+
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/admin/deposit-methods", adminDepositRoutes);
 
 // ✅ Root Route
 app.get("/", (req, res) => {
