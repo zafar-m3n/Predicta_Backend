@@ -26,9 +26,9 @@ const sendEmail = async (to, subject, html) => {
   });
 };
 
-/* ---------- Step 6: Register ---------- */
+/* ---------- Register ---------- */
 const register = async (req, res) => {
-  const { full_name, email, password } = req.body;
+  const { full_name, email, password, phone_number, country_code } = req.body;
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
@@ -44,6 +44,8 @@ const register = async (req, res) => {
       full_name,
       email,
       password_hash,
+      phone_number,
+      country_code,
       verification_token,
       role: "client",
     });
@@ -65,7 +67,7 @@ const register = async (req, res) => {
   }
 };
 
-/* ---------- Step 7: Email verification ---------- */
+/* ---------- Email verification ---------- */
 const verifyEmail = async (req, res) => {
   const { token } = req.query;
   try {
@@ -85,7 +87,7 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-/* ---------- Step 8: Login ---------- */
+/* ---------- Login ---------- */
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -119,6 +121,8 @@ const login = async (req, res) => {
         id: user.id,
         full_name: user.full_name,
         email: user.email,
+        phone_number: user.phone_number,
+        country_code: user.country_code,
         role: user.role,
       },
     });
@@ -128,7 +132,7 @@ const login = async (req, res) => {
   }
 };
 
-/* ---------- Step 9: Forgot password ---------- */
+/* ---------- Forgot password ---------- */
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
@@ -161,7 +165,7 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-/* ---------- Step 10: Reset password ---------- */
+/* ---------- Reset password ---------- */
 const resetPassword = async (req, res) => {
   const { token } = req.query;
   const { password } = req.body;
