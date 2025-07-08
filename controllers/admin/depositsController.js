@@ -22,7 +22,7 @@ const createDepositMethod = async (req, res) => {
     const methodId = depositMethod.id;
 
     if (type === "bank") {
-      const { beneficiary_name, bank_name, branch, account_number, ifsc_code, banco, pix } = req.body;
+      const { beneficiary_name, bank_name, branch, account_number, ifsc_code } = req.body;
 
       await DepositMethodBankDetail.create({
         method_id: methodId,
@@ -31,8 +31,6 @@ const createDepositMethod = async (req, res) => {
         branch,
         account_number,
         ifsc_code,
-        banco,
-        pix,
       });
     }
 
@@ -120,7 +118,14 @@ const updateDepositMethod = async (req, res) => {
     await method.save();
 
     if (method.type === "bank") {
-      await DepositMethodBankDetail.update(req.body, { where: { method_id: id } });
+      const updateData = {
+        beneficiary_name: req.body.beneficiary_name,
+        bank_name: req.body.bank_name,
+        branch: req.body.branch,
+        account_number: req.body.account_number,
+        ifsc_code: req.body.ifsc_code,
+      };
+      await DepositMethodBankDetail.update(updateData, { where: { method_id: id } });
     } else if (method.type === "crypto") {
       const updateData = {
         network: req.body.network,

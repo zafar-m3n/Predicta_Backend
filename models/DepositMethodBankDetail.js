@@ -33,14 +33,6 @@ const DepositMethodBankDetail = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: true,
     },
-    banco: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    pix: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
   },
   {
     tableName: "deposit_method_bank_details",
