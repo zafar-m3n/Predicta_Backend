@@ -1,5 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
+
 const {
   createDepositMethod,
   getAllDepositMethods,
@@ -7,20 +11,27 @@ const {
   updateDepositMethod,
   toggleDepositMethodStatus,
 } = require("../../controllers/admin/depositsController");
+
 const authenticate = require("../../middlewares/authMiddleware");
 const authorizeRoles = require("../../middlewares/roleMiddleware");
-const multer = require("multer");
+
+// Ensure upload folder exists
+const uploadDir = "uploads/deposit-methods";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // File upload config
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/deposit-methods");
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + "-" + file.originalname);
   },
 });
+
 const upload = multer({ storage });
 
 // Protect all routes: must be admin
