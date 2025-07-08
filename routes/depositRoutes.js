@@ -3,10 +3,10 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 
-const { getActiveDepositMethods, createDepositRequest } = require("../../controllers/client/depositController");
+const { getActiveDepositMethods, createDepositRequest } = require("../controllers/depositController");
 
-const authenticate = require("../../middlewares/authMiddleware");
-const authorizeRoles = require("../../middlewares/roleMiddleware");
+const authenticate = require("../middlewares/authMiddleware");
+const authorizeRoles = require("../middlewares/roleMiddleware");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

@@ -4,7 +4,7 @@ const {
   DepositMethodCryptoDetail,
   DepositMethodOtherDetail,
   DepositRequest,
-} = require("../../models");
+} = require("../models");
 
 const path = require("path");
 
