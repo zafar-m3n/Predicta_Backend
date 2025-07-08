@@ -21,6 +21,10 @@ const DepositRequest = sequelize.define(
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
     },
+    transaction_reference: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
     proof_path: {
       type: DataTypes.STRING(255),
       allowNull: true,

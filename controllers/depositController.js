@@ -31,7 +31,7 @@ const getActiveDepositMethods = async (req, res) => {
 const createDepositRequest = async (req, res) => {
   try {
     const userId = req.user.id; // From auth middleware
-    const { method_id, amount } = req.body;
+    const { method_id, amount, transaction_reference } = req.body;
 
     if (!method_id || !amount) {
       return res.status(400).json({ message: "Method and amount are required." });
@@ -51,6 +51,7 @@ const createDepositRequest = async (req, res) => {
       user_id: userId,
       method_id,
       amount,
+      transaction_reference: transaction_reference || null,
       proof_path: proofPath,
       status: "pending",
     });
