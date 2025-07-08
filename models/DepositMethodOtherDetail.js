@@ -28,7 +28,7 @@ const DepositMethodOtherDetail = sequelize.define(
   },
   {
     tableName: "deposit_method_other_details",
-    timestamps: true,
+    timestamps: false,
     underscored: true,
   }
 );

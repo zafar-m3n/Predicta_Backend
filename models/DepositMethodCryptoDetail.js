@@ -32,7 +32,7 @@ const DepositMethodCryptoDetail = sequelize.define(
   },
   {
     tableName: "deposit_method_crypto_details",
-    timestamps: true,
+    timestamps: false,
     underscored: true,
   }
 );

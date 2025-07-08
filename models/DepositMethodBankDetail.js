@@ -44,7 +44,7 @@ const DepositMethodBankDetail = sequelize.define(
   },
   {
     tableName: "deposit_method_bank_details",
-    timestamps: true,
+    timestamps: false,
     underscored: true,
   }
 );
