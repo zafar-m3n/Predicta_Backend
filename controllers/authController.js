@@ -90,7 +90,7 @@ const login = async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.NODE_TRADERSROOM_JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "1d",
     });
 
     res.status(200).json({
