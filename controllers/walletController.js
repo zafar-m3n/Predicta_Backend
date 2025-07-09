@@ -1,4 +1,4 @@
-const { WalletTransaction, DepositRequest } = require("../models");
+const { WalletTransaction, DepositRequest, DepositMethod } = require("../models");
 
 const getWalletBalance = async (req, res) => {
   try {
@@ -26,6 +26,12 @@ const getDepositHistory = async (req, res) => {
 
     const deposits = await DepositRequest.findAll({
       where: { user_id: userId },
+      include: [
+        {
+          model: DepositMethod,
+          attributes: ["name", "type"],
+        },
+      ],
       order: [["created_at", "DESC"]],
     });
 
