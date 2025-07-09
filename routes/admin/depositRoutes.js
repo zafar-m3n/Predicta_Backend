@@ -10,6 +10,8 @@ const {
   getDepositMethodById,
   updateDepositMethod,
   toggleDepositMethodStatus,
+  approveDepositRequest,
+  rejectDepositRequest,
 } = require("../../controllers/admin/depositsController");
 
 const authenticate = require("../../middlewares/authMiddleware");
@@ -66,5 +68,11 @@ router.put(
 
 // Toggle active/inactive
 router.patch("/:id/status", toggleDepositMethodStatus);
+
+// Approve deposit request
+router.patch("/deposit-requests/:id/approve", approveDepositRequest);
+
+// Reject deposit request
+router.patch("/deposit-requests/:id/reject", rejectDepositRequest);
 
 module.exports = router;
