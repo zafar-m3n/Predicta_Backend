@@ -2,29 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { User } = require("../models");
-const nodemailer = require("nodemailer");
+const { sendEmail } = require("../utils/emailUtil");
 require("dotenv").config();
-
-/* ---------- Email transporter ---------- */
-const transporter = nodemailer.createTransport({
-  host: process.env.NODE_TRADERSROOM_EMAIL_HOST,
-  port: process.env.NODE_TRADERSROOM_EMAIL_PORT,
-  secure: true, // true for port 465
-  auth: {
-    user: process.env.NODE_TRADERSROOM_EMAIL_USER,
-    pass: process.env.NODE_TRADERSROOM_EMAIL_PASS,
-  },
-});
-
-/* ---------- Helper: Send email ---------- */
-const sendEmail = async (to, subject, html) => {
-  await transporter.sendMail({
-    from: `"Traders Room" <${process.env.NODE_TRADERSROOM_EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
-};
 
 /* ---------- Register ---------- */
 const register = async (req, res) => {
@@ -62,7 +41,7 @@ const register = async (req, res) => {
 
     res.status(201).json({ message: "Registration successful! Please check your email to verify your account." });
   } catch (err) {
-    console.error(err);
+    console.error("Error in register:", err);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -82,7 +61,7 @@ const verifyEmail = async (req, res) => {
 
     res.status(200).json({ message: "Email verified successfully. You can now log in." });
   } catch (err) {
-    console.error(err);
+    console.error("Error in verifyEmail:", err);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -127,7 +106,7 @@ const login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error in login:", err);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -160,7 +139,7 @@ const forgotPassword = async (req, res) => {
 
     res.status(200).json({ message: "Password reset email sent." });
   } catch (err) {
-    console.error(err);
+    console.error("Error in forgotPassword:", err);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -185,7 +164,7 @@ const resetPassword = async (req, res) => {
 
     res.status(200).json({ message: "Password reset successful. You can now log in." });
   } catch (err) {
-    console.error(err);
+    console.error("Error in resetPassword:", err);
     res.status(500).json({ message: "Server error." });
   }
 };
