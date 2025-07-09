@@ -7,6 +7,7 @@ const {
   WalletTransaction,
   User,
 } = require("../../models");
+const { sendEmail } = require("../../utils/emailUtil");
 
 const createDepositMethod = async (req, res) => {
   try {
@@ -191,7 +192,10 @@ const approveDepositRequest = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const depositRequest = await DepositRequest.findByPk(id);
+    const depositRequest = await DepositRequest.findByPk(id, {
+      include: [{ model: User, attributes: ["full_name", "email"] }],
+    });
+
     if (!depositRequest) {
       return res.status(404).json({ message: "Deposit request not found." });
     }
@@ -211,6 +215,14 @@ const approveDepositRequest = async (req, res) => {
       description: "Deposit approved by admin",
     });
 
+    await sendEmail(
+      depositRequest.User.email,
+      "Deposit Request Approved",
+      `<p>Hello ${depositRequest.User.full_name},</p>
+       <p>Your deposit request of $${depositRequest.amount} has been approved. Your wallet balance has been updated.</p>
+       <p>Thank you for using Traders Room.</p>`
+    );
+
     res.status(200).json({ message: "Deposit request approved and wallet updated." });
   } catch (error) {
     console.error("Error in approveDepositRequest:", error);
@@ -223,7 +235,10 @@ const rejectDepositRequest = async (req, res) => {
     const { id } = req.params;
     const { admin_note } = req.body;
 
-    const depositRequest = await DepositRequest.findByPk(id);
+    const depositRequest = await DepositRequest.findByPk(id, {
+      include: [{ model: User, attributes: ["full_name", "email"] }],
+    });
+
     if (!depositRequest) {
       return res.status(404).json({ message: "Deposit request not found." });
     }
@@ -236,7 +251,16 @@ const rejectDepositRequest = async (req, res) => {
     depositRequest.admin_note = admin_note || "Rejected by admin";
     await depositRequest.save();
 
-    res.status(200).json({ message: "Deposit request rejected successfully." });
+    await sendEmail(
+      depositRequest.User.email,
+      "Deposit Request Rejected",
+      `<p>Hello ${depositRequest.User.full_name},</p>
+       <p>Your deposit request of $${depositRequest.amount} has been rejected.</p>
+       <p>Reason: ${depositRequest.admin_note}</p>
+       <p>If you have any questions, please contact support.</p>`
+    );
+
+    res.status(200).json({ message: "Deposit request rejected and user notified." });
   } catch (error) {
     console.error("Error in rejectDepositRequest:", error);
     res.status(500).json({ message: "Server error." });
