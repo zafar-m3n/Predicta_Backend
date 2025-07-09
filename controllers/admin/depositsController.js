@@ -26,7 +26,6 @@ const createDepositMethod = async (req, res) => {
 
     if (type === "bank") {
       const { beneficiary_name, bank_name, branch, account_number, ifsc_code } = req.body;
-
       await DepositMethodBankDetail.create({
         method_id: methodId,
         beneficiary_name,
@@ -35,9 +34,7 @@ const createDepositMethod = async (req, res) => {
         account_number,
         ifsc_code,
       });
-    }
-
-    if (type === "crypto") {
+    } else if (type === "crypto") {
       const { network, address } = req.body;
       const qr_code_path = req.files?.qr_code?.[0]?.path || null;
       const logo_path = req.files?.logo?.[0]?.path || null;
@@ -49,9 +46,7 @@ const createDepositMethod = async (req, res) => {
         qr_code_path,
         logo_path,
       });
-    }
-
-    if (type === "other") {
+    } else if (type === "other") {
       const { notes } = req.body;
       const qr_code_path = req.files?.qr_code?.[0]?.path || null;
       const logo_path = req.files?.logo?.[0]?.path || null;
@@ -66,17 +61,30 @@ const createDepositMethod = async (req, res) => {
 
     res.status(201).json({ message: "Deposit method created successfully." });
   } catch (error) {
-    console.error(error);
+    console.error("Error in createDepositMethod:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
 
 const getAllDepositMethods = async (req, res) => {
   try {
-    const methods = await DepositMethod.findAll();
-    res.status(200).json({ methods });
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await DepositMethod.findAndCountAll({
+      offset: parseInt(offset),
+      limit: parseInt(limit),
+      order: [["created_at", "DESC"]],
+    });
+
+    res.status(200).json({
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit),
+      methods: rows,
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Error in getAllDepositMethods:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -101,7 +109,7 @@ const getDepositMethodById = async (req, res) => {
 
     res.status(200).json({ method, details });
   } catch (error) {
-    console.error(error);
+    console.error("Error in getDepositMethodById:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -116,39 +124,45 @@ const updateDepositMethod = async (req, res) => {
       return res.status(404).json({ message: "Deposit method not found." });
     }
 
-    method.name = name || method.name;
-    method.status = status || method.status;
+    method.name = name ?? method.name;
+    method.status = status ?? method.status;
     await method.save();
 
     if (method.type === "bank") {
-      const updateData = {
-        beneficiary_name: req.body.beneficiary_name,
-        bank_name: req.body.bank_name,
-        branch: req.body.branch,
-        account_number: req.body.account_number,
-        ifsc_code: req.body.ifsc_code,
-      };
-      await DepositMethodBankDetail.update(updateData, { where: { method_id: id } });
+      await DepositMethodBankDetail.update(
+        {
+          beneficiary_name: req.body.beneficiary_name,
+          bank_name: req.body.bank_name,
+          branch: req.body.branch,
+          account_number: req.body.account_number,
+          ifsc_code: req.body.ifsc_code,
+        },
+        { where: { method_id: id } }
+      );
     } else if (method.type === "crypto") {
-      const updateData = {
-        network: req.body.network,
-        address: req.body.address,
-        qr_code_path: req.files?.qr_code?.[0]?.path || undefined,
-        logo_path: req.files?.logo?.[0]?.path || undefined,
-      };
-      await DepositMethodCryptoDetail.update(updateData, { where: { method_id: id } });
+      await DepositMethodCryptoDetail.update(
+        {
+          network: req.body.network,
+          address: req.body.address,
+          qr_code_path: req.files?.qr_code?.[0]?.path,
+          logo_path: req.files?.logo?.[0]?.path,
+        },
+        { where: { method_id: id } }
+      );
     } else if (method.type === "other") {
-      const updateData = {
-        qr_code_path: req.files?.qr_code?.[0]?.path || undefined,
-        logo_path: req.files?.logo?.[0]?.path || undefined,
-        notes: req.body.notes,
-      };
-      await DepositMethodOtherDetail.update(updateData, { where: { method_id: id } });
+      await DepositMethodOtherDetail.update(
+        {
+          qr_code_path: req.files?.qr_code?.[0]?.path,
+          logo_path: req.files?.logo?.[0]?.path,
+          notes: req.body.notes,
+        },
+        { where: { method_id: id } }
+      );
     }
 
     res.status(200).json({ message: "Deposit method updated successfully." });
   } catch (error) {
-    console.error(error);
+    console.error("Error in updateDepositMethod:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -168,7 +182,7 @@ const toggleDepositMethodStatus = async (req, res) => {
 
     res.status(200).json({ message: `Deposit method status updated to ${status}.` });
   } catch (error) {
-    console.error(error);
+    console.error("Error in toggleDepositMethodStatus:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -199,7 +213,7 @@ const approveDepositRequest = async (req, res) => {
 
     res.status(200).json({ message: "Deposit request approved and wallet updated." });
   } catch (error) {
-    console.error(error);
+    console.error("Error in approveDepositRequest:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -224,14 +238,17 @@ const rejectDepositRequest = async (req, res) => {
 
     res.status(200).json({ message: "Deposit request rejected successfully." });
   } catch (error) {
-    console.error(error);
+    console.error("Error in rejectDepositRequest:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
 
 const getAllDepositRequests = async (req, res) => {
   try {
-    const requests = await DepositRequest.findAll({
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await DepositRequest.findAndCountAll({
       include: [
         {
           model: User,
@@ -243,11 +260,18 @@ const getAllDepositRequests = async (req, res) => {
         },
       ],
       order: [["created_at", "DESC"]],
+      offset: parseInt(offset),
+      limit: parseInt(limit),
     });
 
-    res.status(200).json({ requests });
+    res.status(200).json({
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit),
+      requests: rows,
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Error in getAllDepositRequests:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
