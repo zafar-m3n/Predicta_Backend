@@ -5,6 +5,7 @@ const {
   DepositMethodOtherDetail,
   DepositRequest,
   WalletTransaction,
+  User,
 } = require("../../models");
 
 const createDepositMethod = async (req, res) => {

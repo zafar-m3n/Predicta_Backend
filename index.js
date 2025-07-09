@@ -32,10 +32,12 @@ app.use("/uploads", express.static("uploads"));
 // ✅ Routes
 const authRoutes = require("./routes/authRoutes");
 const adminDepositRoutes = require("./routes/admin/depositRoutes");
+const adminDepositRequestRoutes = require("./routes/admin/depositRequestRoutes");
 const clientDepositRoutes = require("./routes/depositRoutes");
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin/deposit-methods", adminDepositRoutes);
+app.use("/api/v1/admin/deposit-requests", adminDepositRequestRoutes);
 app.use("/api/v1/client", clientDepositRoutes);
 
 // ✅ Root Route
