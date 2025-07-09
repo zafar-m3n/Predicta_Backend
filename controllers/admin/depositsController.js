@@ -3,6 +3,8 @@ const {
   DepositMethodBankDetail,
   DepositMethodCryptoDetail,
   DepositMethodOtherDetail,
+  DepositRequest,
+  WalletTransaction,
 } = require("../../models");
 
 const createDepositMethod = async (req, res) => {
@@ -170,10 +172,68 @@ const toggleDepositMethodStatus = async (req, res) => {
   }
 };
 
+const approveDepositRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const depositRequest = await DepositRequest.findByPk(id);
+    if (!depositRequest) {
+      return res.status(404).json({ message: "Deposit request not found." });
+    }
+
+    if (depositRequest.status !== "pending") {
+      return res.status(400).json({ message: "Only pending requests can be approved." });
+    }
+
+    depositRequest.status = "approved";
+    await depositRequest.save();
+
+    await WalletTransaction.create({
+      user_id: depositRequest.user_id,
+      type: "deposit",
+      amount: depositRequest.amount,
+      reference_id: depositRequest.id,
+      description: "Deposit approved by admin",
+    });
+
+    res.status(200).json({ message: "Deposit request approved and wallet updated." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+const rejectDepositRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { admin_note } = req.body;
+
+    const depositRequest = await DepositRequest.findByPk(id);
+    if (!depositRequest) {
+      return res.status(404).json({ message: "Deposit request not found." });
+    }
+
+    if (depositRequest.status !== "pending") {
+      return res.status(400).json({ message: "Only pending requests can be rejected." });
+    }
+
+    depositRequest.status = "rejected";
+    depositRequest.admin_note = admin_note || "Rejected by admin";
+    await depositRequest.save();
+
+    res.status(200).json({ message: "Deposit request rejected successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 module.exports = {
   createDepositMethod,
   getAllDepositMethods,
   getDepositMethodById,
   updateDepositMethod,
   toggleDepositMethodStatus,
+  approveDepositRequest,
+  rejectDepositRequest,
 };
