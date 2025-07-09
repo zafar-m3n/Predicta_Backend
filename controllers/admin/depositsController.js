@@ -228,6 +228,29 @@ const rejectDepositRequest = async (req, res) => {
   }
 };
 
+const getAllDepositRequests = async (req, res) => {
+  try {
+    const requests = await DepositRequest.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id", "full_name", "email"],
+        },
+        {
+          model: DepositMethod,
+          attributes: ["id", "name", "type"],
+        },
+      ],
+      order: [["created_at", "DESC"]],
+    });
+
+    res.status(200).json({ requests });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 module.exports = {
   createDepositMethod,
   getAllDepositMethods,
@@ -236,4 +259,5 @@ module.exports = {
   toggleDepositMethodStatus,
   approveDepositRequest,
   rejectDepositRequest,
+  getAllDepositRequests,
 };

@@ -10,6 +10,7 @@ const {
   getDepositMethodById,
   updateDepositMethod,
   toggleDepositMethodStatus,
+  getAllDepositRequests,
   approveDepositRequest,
   rejectDepositRequest,
 } = require("../../controllers/admin/depositsController");
@@ -68,6 +69,9 @@ router.put(
 
 // Toggle active/inactive
 router.patch("/:id/status", toggleDepositMethodStatus);
+
+// Get all deposit requests
+router.get("/deposit-requests", getAllDepositRequests);
 
 // Approve deposit request
 router.patch("/deposit-requests/:id/approve", approveDepositRequest);
