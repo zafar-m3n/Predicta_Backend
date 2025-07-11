@@ -34,16 +34,19 @@ app.use("/uploads", express.static("uploads"));
 const authRoutes = require("./routes/authRoutes");
 const adminDepositRoutes = require("./routes/admin/depositRoutes");
 const adminDepositRequestRoutes = require("./routes/admin/depositRequestRoutes");
+const adminKycRoutes = require("./routes/admin/kycRoutes");
 const clientDepositRoutes = require("./routes/depositRoutes");
 const clientWalletRoutes = require("./routes/walletRoutes");
-const clientProfileRoutes = require("./routes/profileRoutes"); 
+const clientProfileRoutes = require("./routes/profileRoutes");
 
+// ✅ Use Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin/deposit-methods", adminDepositRoutes);
 app.use("/api/v1/admin/deposit-requests", adminDepositRequestRoutes);
+app.use("/api/v1/admin/kyc-documents", adminKycRoutes);
 app.use("/api/v1/client", clientDepositRoutes);
 app.use("/api/v1/client/wallet", clientWalletRoutes);
-app.use("/api/v1/client/profile", clientProfileRoutes); // <-- ✅ Add this line
+app.use("/api/v1/client/profile", clientProfileRoutes);
 
 // ✅ Root Route
 app.get("/", (req, res) => {
