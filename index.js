@@ -36,6 +36,7 @@ const adminDepositRequestRoutes = require("./routes/admin/depositRequestRoutes")
 const adminKycRoutes = require("./routes/admin/kycRoutes");
 const adminUserRoutes = require("./routes/admin/userRoutes");
 const clientDepositRoutes = require("./routes/depositRoutes");
+const clientWithdrawalRoutes = require("./routes/withdrawalRoutes");
 const clientWalletRoutes = require("./routes/walletRoutes");
 const clientProfileRoutes = require("./routes/profileRoutes");
 
@@ -46,6 +47,7 @@ app.use("/api/v1/admin/deposit-requests", adminDepositRequestRoutes);
 app.use("/api/v1/admin/kyc-documents", adminKycRoutes);
 app.use("/api/v1/admin/users", adminUserRoutes);
 app.use("/api/v1/client", clientDepositRoutes);
+app.use("/api/v1/client", clientWithdrawalRoutes);
 app.use("/api/v1/client/wallet", clientWalletRoutes);
 app.use("/api/v1/client/profile", clientProfileRoutes);
 
