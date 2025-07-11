@@ -52,14 +52,29 @@ const uploadKycDocument = async (req, res) => {
       return res.status(400).json({ message: "Document type and file are required." });
     }
 
-    await KycDocument.create({
-      user_id: req.user.id,
-      document_type,
-      document_path,
-      status: "pending",
+    // Check if document already exists
+    let kycDoc = await KycDocument.findOne({
+      where: { user_id: req.user.id, document_type },
     });
 
-    res.status(201).json({ message: "KYC document uploaded successfully and pending review." });
+    if (kycDoc) {
+      // Update existing document
+      kycDoc.document_path = document_path;
+      kycDoc.status = "pending";
+      await kycDoc.save();
+
+      return res.status(200).json({ message: "KYC document uploaded successfully and pending review." });
+    } else {
+      // Create new document
+      await KycDocument.create({
+        user_id: req.user.id,
+        document_type,
+        document_path,
+        status: "pending",
+      });
+
+      return res.status(201).json({ message: "KYC document uploaded successfully and pending review." });
+    }
   } catch (error) {
     console.error("Error in uploadKycDocument:", error);
     res.status(500).json({ message: "Server error." });
