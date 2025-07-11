@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { User, KycDocument, WithdrawalMethod } = require("../../models");
+const { User, KycDocument, WithdrawalMethod } = require("../models");
 
 // === Get profile info ===
 const getProfile = async (req, res) => {

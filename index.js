@@ -36,7 +36,7 @@ const adminDepositRoutes = require("./routes/admin/depositRoutes");
 const adminDepositRequestRoutes = require("./routes/admin/depositRequestRoutes");
 const clientDepositRoutes = require("./routes/depositRoutes");
 const clientWalletRoutes = require("./routes/walletRoutes");
-const clientProfileRoutes = require("./routes/client/profileRoutes"); // <-- ✅ Add this line
+const clientProfileRoutes = require("./routes/profileRoutes"); 
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin/deposit-methods", adminDepositRoutes);

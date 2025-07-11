@@ -10,11 +10,11 @@ const {
   getWithdrawalMethods,
   deleteWithdrawalMethod,
   changePassword,
-} = require("../../controllers/client/profileController");
+} = require("../controllers/profileController");
 
-const authenticate = require("../../middlewares/authMiddleware");
-const authorizeRoles = require("../../middlewares/roleMiddleware");
-const { getMulterUpload } = require("../../config/multerConfig");
+const authenticate = require("../middlewares/authMiddleware");
+const authorizeRoles = require("../middlewares/roleMiddleware");
+const { getMulterUpload } = require("../config/multerConfig");
 
 // Specify upload directory for KYC
 const uploadDir = "uploads/kyc-documents";
