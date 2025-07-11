@@ -90,21 +90,31 @@ const getUserById = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { full_name, phone_number, country_code, role, email_verified, password } = req.body;
+    const { full_name, email, phone_number, country_code, role, email_verified, password } = req.body;
 
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    user.full_name = full_name ?? user.full_name;
-    user.phone_number = phone_number ?? user.phone_number;
-    user.country_code = country_code ?? user.country_code;
-    user.role = role ?? user.role;
-    user.email_verified = email_verified ?? user.email_verified;
+    // Check if email is changing and if so, ensure it is unique
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ message: "A user with this email already exists." });
+      }
+      user.email = email;
+    }
+
+    if (full_name !== undefined) user.full_name = full_name;
+    if (phone_number !== undefined) user.phone_number = phone_number;
+    if (country_code !== undefined) user.country_code = country_code;
+    if (role !== undefined) user.role = role;
+    if (email_verified !== undefined) user.email_verified = email_verified;
 
     if (password) {
-      user.password_hash = await bcrypt.hash(password, 10);
+      const salt = await bcrypt.genSalt(10);
+      user.password_hash = await bcrypt.hash(password, salt);
     }
 
     await user.save();
