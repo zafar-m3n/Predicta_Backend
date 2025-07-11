@@ -1,4 +1,4 @@
-const { WalletTransaction, DepositRequest, DepositMethod } = require("../models");
+const { WalletTransaction, DepositRequest, DepositMethod, WithdrawalRequest, WithdrawalMethod } = require("../models");
 
 const getWalletBalance = async (req, res) => {
   try {
@@ -52,7 +52,40 @@ const getDepositHistory = async (req, res) => {
   }
 };
 
+const getWithdrawalHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await WithdrawalRequest.findAndCountAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: WithdrawalMethod,
+          attributes: ["type", "bank_name", "account_number", "wallet_address"],
+        },
+      ],
+      order: [["created_at", "DESC"]],
+      offset: parseInt(offset),
+      limit: parseInt(limit),
+    });
+
+    res.status(200).json({
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit),
+      withdrawals: rows,
+    });
+  } catch (error) {
+    console.error("Error in getWithdrawalHistory:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 module.exports = {
   getWalletBalance,
   getDepositHistory,
+  getWithdrawalHistory,
 };

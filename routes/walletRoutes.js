@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getWalletBalance, getDepositHistory } = require("../controllers/walletController");
+const { getWalletBalance, getDepositHistory, getWithdrawalHistory } = require("../controllers/walletController");
 const authenticate = require("../middlewares/authMiddleware");
 const authorizeRoles = require("../middlewares/roleMiddleware");
 
@@ -14,5 +14,8 @@ router.get("/balance", getWalletBalance);
 
 // Get deposit history
 router.get("/deposit-history", getDepositHistory);
+
+// Get withdrawal history
+router.get("/withdrawal-history", getWithdrawalHistory);
 
 module.exports = router;
