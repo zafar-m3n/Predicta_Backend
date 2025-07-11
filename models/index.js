@@ -7,6 +7,7 @@ const DepositRequest = require("./DepositRequest");
 const WalletTransaction = require("./WalletTransaction");
 const KycDocument = require("./KycDocument");
 const WithdrawalMethod = require("./WithdrawalMethod");
+const WithdrawalRequest = require("./WithdrawalRequest");
 
 // === Associations for deposit methods ===
 DepositMethod.hasOne(DepositMethodBankDetail, {
@@ -45,6 +46,13 @@ KycDocument.belongsTo(User, { foreignKey: "user_id" });
 User.hasMany(WithdrawalMethod, { foreignKey: "user_id", onDelete: "CASCADE" });
 WithdrawalMethod.belongsTo(User, { foreignKey: "user_id" });
 
+// === Associations for withdrawal requests ===
+User.hasMany(WithdrawalRequest, { foreignKey: "user_id", onDelete: "CASCADE" });
+WithdrawalRequest.belongsTo(User, { foreignKey: "user_id" });
+
+WithdrawalMethod.hasMany(WithdrawalRequest, { foreignKey: "method_id", onDelete: "CASCADE" });
+WithdrawalRequest.belongsTo(WithdrawalMethod, { foreignKey: "method_id" });
+
 // === Export all models ===
 module.exports = {
   User,
@@ -56,4 +64,5 @@ module.exports = {
   WalletTransaction,
   KycDocument,
   WithdrawalMethod,
+  WithdrawalRequest,
 };
