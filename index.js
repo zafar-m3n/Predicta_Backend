@@ -36,12 +36,14 @@ const adminDepositRoutes = require("./routes/admin/depositRoutes");
 const adminDepositRequestRoutes = require("./routes/admin/depositRequestRoutes");
 const clientDepositRoutes = require("./routes/depositRoutes");
 const clientWalletRoutes = require("./routes/walletRoutes");
+const clientProfileRoutes = require("./routes/client/profileRoutes"); // <-- ✅ Add this line
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin/deposit-methods", adminDepositRoutes);
 app.use("/api/v1/admin/deposit-requests", adminDepositRequestRoutes);
 app.use("/api/v1/client", clientDepositRoutes);
 app.use("/api/v1/client/wallet", clientWalletRoutes);
+app.use("/api/v1/client/profile", clientProfileRoutes); // <-- ✅ Add this line
 
 // ✅ Root Route
 app.get("/", (req, res) => {
