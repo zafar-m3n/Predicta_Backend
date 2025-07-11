@@ -5,8 +5,10 @@ const DepositMethodCryptoDetail = require("./DepositMethodCryptoDetail");
 const DepositMethodOtherDetail = require("./DepositMethodOtherDetail");
 const DepositRequest = require("./DepositRequest");
 const WalletTransaction = require("./WalletTransaction");
+const KycDocument = require("./KycDocument");
+const WithdrawalMethod = require("./WithdrawalMethod");
 
-// Define associations for deposit methods
+// === Associations for deposit methods ===
 DepositMethod.hasOne(DepositMethodBankDetail, {
   foreignKey: "method_id",
   onDelete: "CASCADE",
@@ -24,18 +26,26 @@ DepositMethodBankDetail.belongsTo(DepositMethod, { foreignKey: "method_id" });
 DepositMethodCryptoDetail.belongsTo(DepositMethod, { foreignKey: "method_id" });
 DepositMethodOtherDetail.belongsTo(DepositMethod, { foreignKey: "method_id" });
 
-// Associations for deposit requests
+// === Associations for deposit requests ===
 User.hasMany(DepositRequest, { foreignKey: "user_id", onDelete: "CASCADE" });
 DepositRequest.belongsTo(User, { foreignKey: "user_id" });
 
 DepositMethod.hasMany(DepositRequest, { foreignKey: "method_id", onDelete: "CASCADE" });
 DepositRequest.belongsTo(DepositMethod, { foreignKey: "method_id" });
 
-// Associations for wallet transactions
+// === Associations for wallet transactions ===
 User.hasMany(WalletTransaction, { foreignKey: "user_id", onDelete: "CASCADE" });
 WalletTransaction.belongsTo(User, { foreignKey: "user_id" });
 
-// Export all models
+// === Associations for KYC documents ===
+User.hasMany(KycDocument, { foreignKey: "user_id", onDelete: "CASCADE" });
+KycDocument.belongsTo(User, { foreignKey: "user_id" });
+
+// === Associations for withdrawal methods ===
+User.hasMany(WithdrawalMethod, { foreignKey: "user_id", onDelete: "CASCADE" });
+WithdrawalMethod.belongsTo(User, { foreignKey: "user_id" });
+
+// === Export all models ===
 module.exports = {
   User,
   DepositMethod,
@@ -44,4 +54,6 @@ module.exports = {
   DepositMethodOtherDetail,
   DepositRequest,
   WalletTransaction,
+  KycDocument,
+  WithdrawalMethod,
 };
