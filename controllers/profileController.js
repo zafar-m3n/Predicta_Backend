@@ -182,6 +182,5 @@ module.exports = {
   getKycDocuments,
   addWithdrawalMethod,
   getWithdrawalMethods,
-  deleteWithdrawalMethod,
   changePassword,
 };
