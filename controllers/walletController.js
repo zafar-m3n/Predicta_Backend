@@ -64,7 +64,6 @@ const getWithdrawalHistory = async (req, res) => {
       include: [
         {
           model: WithdrawalMethod,
-          attributes: ["type", "bank_name", "account_number", "wallet_address"],
         },
       ],
       order: [["created_at", "DESC"]],
