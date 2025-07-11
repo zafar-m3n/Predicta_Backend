@@ -15,7 +15,8 @@ const createUser = async (req, res) => {
       return res.status(400).json({ message: "A user with this email already exists." });
     }
 
-    const password_hash = await bcrypt.hash(password, 10);
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
 
     const newUser = await User.create({
       full_name,
