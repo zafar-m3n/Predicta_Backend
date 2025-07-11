@@ -8,7 +8,6 @@ const {
   getKycDocuments,
   addWithdrawalMethod,
   getWithdrawalMethods,
-  deleteWithdrawalMethod,
   changePassword,
 } = require("../controllers/profileController");
 
@@ -35,7 +34,6 @@ router.get("/kyc", getKycDocuments);
 /* ---------- Withdrawal Methods ---------- */
 router.post("/withdrawal-methods", addWithdrawalMethod);
 router.get("/withdrawal-methods", getWithdrawalMethods);
-router.delete("/withdrawal-methods/:id", deleteWithdrawalMethod);
 
 /* ---------- Password ---------- */
 router.patch("/change-password", changePassword);

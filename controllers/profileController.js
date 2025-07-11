@@ -142,28 +142,6 @@ const getWithdrawalMethods = async (req, res) => {
   }
 };
 
-// === Delete (deactivate) withdrawal method ===
-const deleteWithdrawalMethod = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const method = await WithdrawalMethod.findOne({
-      where: { id, user_id: req.user.id },
-    });
-
-    if (!method) {
-      return res.status(404).json({ message: "Withdrawal method not found." });
-    }
-
-    method.status = "inactive";
-    await method.save();
-
-    res.status(200).json({ message: "Withdrawal method deactivated successfully." });
-  } catch (error) {
-    console.error("Error in deleteWithdrawalMethod:", error);
-    res.status(500).json({ message: "Server error." });
-  }
-};
 
 // === Change password ===
 const changePassword = async (req, res) => {
