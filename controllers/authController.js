@@ -31,13 +31,32 @@ const register = async (req, res) => {
 
     const verifyUrl = `${process.env.NODE_TRADERSROOM_CLIENT_URL}/verify-email?token=${verification_token}`;
 
-    await sendEmail(
-      email,
-      "Verify your Traders Room account",
-      `<p>Hello ${full_name},</p>
-       <p>Please verify your email by clicking the link below:</p>
-       <a href="${verifyUrl}">${verifyUrl}</a>`
-    );
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          Thank you for registering with EquityFX. Please verify your email to activate your account.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verifyUrl}" style="background-color: #309f6d; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+            Verify Email
+          </a>
+        </div>
+        <p style="font-size: 15px; line-height: 1.6;">
+          If you did not sign up for an EquityFX account, please ignore this email.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(email, "EquityFX: Verify Your Email", emailHtml);
 
     res.status(201).json({ message: "Registration successful! Please check your email to verify your account." });
   } catch (err) {
@@ -128,14 +147,32 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     const resetUrl = `${process.env.NODE_TRADERSROOM_CLIENT_URL}/reset-password?token=${reset_token}`;
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
-    await sendEmail(
-      email,
-      "Password Reset Request",
-      `<p>Hello ${user.full_name},</p>
-       <p>Reset your password by clicking the link below:</p>
-       <a href="${resetUrl}">${resetUrl}</a>`
-    );
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${user.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          We received a request to reset your password for your EquityFX account.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #309f6d; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+            Reset Password
+          </a>
+        </div>
+        <p style="font-size: 15px; line-height: 1.6;">
+          If you did not request a password reset, please ignore this email or contact our support team.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(email, "EquityFX: Password Reset Request", emailHtml);
 
     res.status(200).json({ message: "Password reset email sent." });
   } catch (err) {
