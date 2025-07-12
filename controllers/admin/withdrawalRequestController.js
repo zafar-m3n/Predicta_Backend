@@ -56,18 +56,32 @@ const approveWithdrawalRequest = async (req, res) => {
     await WalletTransaction.create({
       user_id: withdrawalRequest.user_id,
       type: "withdrawal",
-      amount: -Math.abs(withdrawalRequest.amount), // Ensure negative
+      amount: -Math.abs(withdrawalRequest.amount),
       reference_id: withdrawalRequest.id,
       description: "Withdrawal approved by admin",
     });
 
-    await sendEmail(
-      withdrawalRequest.User.email,
-      "Withdrawal Request Approved",
-      `<p>Hello ${withdrawalRequest.User.full_name},</p>
-       <p>Your withdrawal request of $${withdrawalRequest.amount} has been approved. The funds will be processed shortly.</p>
-       <p>Thank you for using Traders Room.</p>`
-    );
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${withdrawalRequest.User.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          We’re pleased to inform you that your withdrawal request of <strong>$${withdrawalRequest.amount}</strong> has been approved.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          The funds will be processed and transferred to your selected method shortly.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(withdrawalRequest.User.email, "EquityFX: Withdrawal Request Approved", emailHtml);
 
     res.status(200).json({ message: "Withdrawal request approved and wallet updated." });
   } catch (error) {
@@ -97,14 +111,30 @@ const rejectWithdrawalRequest = async (req, res) => {
     withdrawalRequest.admin_note = admin_note || "Rejected by admin";
     await withdrawalRequest.save();
 
-    await sendEmail(
-      withdrawalRequest.User.email,
-      "Withdrawal Request Rejected",
-      `<p>Hello ${withdrawalRequest.User.full_name},</p>
-       <p>Your withdrawal request of $${withdrawalRequest.amount} has been rejected.</p>
-       <p>Reason: ${withdrawalRequest.admin_note}</p>
-       <p>If you have any questions, please contact support.</p>`
-    );
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${withdrawalRequest.User.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          We regret to inform you that your withdrawal request of <strong>$${withdrawalRequest.amount}</strong> has been rejected.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          <strong>Reason:</strong> ${withdrawalRequest.admin_note}
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          If you have any questions or require further assistance, please feel free to contact our support team.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(withdrawalRequest.User.email, "EquityFX: Withdrawal Request Rejected", emailHtml);
 
     res.status(200).json({ message: "Withdrawal request rejected and user notified." });
   } catch (error) {
