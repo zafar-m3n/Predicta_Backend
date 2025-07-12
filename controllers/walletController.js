@@ -1,10 +1,11 @@
 const { WalletTransaction, DepositRequest, DepositMethod, WithdrawalRequest, WithdrawalMethod } = require("../models");
+const { resSuccess, resError } = require("../utils/responseUtil");
 
+// === Get wallet balance ===
 const getWalletBalance = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Sum all wallet transactions for the user
     const [{ total_balance }] = await WalletTransaction.findAll({
       where: { user_id: userId },
       attributes: [[WalletTransaction.sequelize.fn("SUM", WalletTransaction.sequelize.col("amount")), "total_balance"]],
@@ -13,17 +14,17 @@ const getWalletBalance = async (req, res) => {
 
     const totalBalance = total_balance || 0;
 
-    res.status(200).json({ balance: parseFloat(totalBalance) });
+    resSuccess(res, { balance: parseFloat(totalBalance) });
   } catch (error) {
     console.error("Error in getWalletBalance:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
+// === Get deposit history ===
 const getDepositHistory = async (req, res) => {
   try {
     const userId = req.user.id;
-
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
@@ -40,7 +41,7 @@ const getDepositHistory = async (req, res) => {
       limit: parseInt(limit),
     });
 
-    res.status(200).json({
+    resSuccess(res, {
       total: count,
       page: parseInt(page),
       totalPages: Math.ceil(count / limit),
@@ -48,14 +49,14 @@ const getDepositHistory = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getDepositHistory:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
+// === Get withdrawal history ===
 const getWithdrawalHistory = async (req, res) => {
   try {
     const userId = req.user.id;
-
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
@@ -71,7 +72,7 @@ const getWithdrawalHistory = async (req, res) => {
       limit: parseInt(limit),
     });
 
-    res.status(200).json({
+    resSuccess(res, {
       total: count,
       page: parseInt(page),
       totalPages: Math.ceil(count / limit),
@@ -79,7 +80,7 @@ const getWithdrawalHistory = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getWithdrawalHistory:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 

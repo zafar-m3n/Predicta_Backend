@@ -2,15 +2,16 @@ const { SupportTicket, SupportTicketMessage, User } = require("../models");
 const { Op } = require("sequelize");
 const path = require("path");
 const { sendEmail } = require("../utils/emailUtil");
+const { resSuccess, resError } = require("../utils/responseUtil");
 
-// Create new support ticket
+// === Create new support ticket ===
 const createTicket = async (req, res) => {
   try {
     const userId = req.user.id;
     const { subject, category, message } = req.body;
 
     if (!subject || !category || !message) {
-      return res.status(400).json({ message: "Subject, category, and message are required." });
+      return resError(res, "Subject, category, and message are required.", 400);
     }
 
     const ticket = await SupportTicket.create({
@@ -36,8 +37,8 @@ const createTicket = async (req, res) => {
 
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${user.full_name},</h2>
@@ -58,14 +59,14 @@ const createTicket = async (req, res) => {
 
     await sendEmail(user.email, "EquityFX: Support Ticket Submitted", emailHtml);
 
-    res.status(201).json({ message: "Support ticket created successfully.", ticket_id: ticket.id });
+    resSuccess(res, { message: "Support ticket created successfully.", ticket_id: ticket.id }, 201);
   } catch (error) {
     console.error("Error in createTicket:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
-// Get all tickets of the current user
+// === Get all tickets of the current user ===
 const getMyTickets = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -79,7 +80,7 @@ const getMyTickets = async (req, res) => {
       limit: parseInt(limit),
     });
 
-    res.status(200).json({
+    resSuccess(res, {
       total: count,
       page: parseInt(page),
       totalPages: Math.ceil(count / limit),
@@ -87,11 +88,11 @@ const getMyTickets = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getMyTickets:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
-// Get single ticket details including messages
+// === Get single ticket details including messages ===
 const getTicketById = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -108,17 +109,17 @@ const getTicketById = async (req, res) => {
     });
 
     if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found." });
+      return resError(res, "Ticket not found.", 404);
     }
 
-    res.status(200).json({ ticket });
+    resSuccess(res, { ticket });
   } catch (error) {
     console.error("Error in getTicketById:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
-// Send message to ticket
+// === Send message to ticket ===
 const sendMessageToTicket = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -126,7 +127,7 @@ const sendMessageToTicket = async (req, res) => {
     const { message } = req.body;
 
     if (!message) {
-      return res.status(400).json({ message: "Message is required." });
+      return resError(res, "Message is required.", 400);
     }
 
     const ticket = await SupportTicket.findOne({
@@ -135,7 +136,7 @@ const sendMessageToTicket = async (req, res) => {
     });
 
     if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found." });
+      return resError(res, "Ticket not found.", 404);
     }
 
     let attachmentPath = null;
@@ -150,11 +151,10 @@ const sendMessageToTicket = async (req, res) => {
       attachment_path: attachmentPath,
     });
 
-    // Email setup
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${ticket.User.full_name},</h2>
@@ -175,10 +175,10 @@ const sendMessageToTicket = async (req, res) => {
 
     await sendEmail(ticket.User.email, "EquityFX: Support Ticket Reply Received", emailHtml);
 
-    res.status(201).json({ message: "Reply sent successfully." });
+    resSuccess(res, { message: "Reply sent successfully." }, 201);
   } catch (error) {
     console.error("Error in sendMessageToTicket:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 

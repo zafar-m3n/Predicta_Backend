@@ -7,7 +7,7 @@ const {
   User,
 } = require("../models");
 const { sendEmail } = require("../utils/emailUtil");
-const path = require("path");
+const { resSuccess, resError } = require("../utils/responseUtil");
 
 // Get all active deposit methods with details
 const getActiveDepositMethods = async (req, res) => {
@@ -21,26 +21,26 @@ const getActiveDepositMethods = async (req, res) => {
       ],
     });
 
-    res.status(200).json({ methods });
+    resSuccess(res, { methods });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error while fetching deposit methods." });
+    console.error("Error in getActiveDepositMethods:", error);
+    resError(res, error.message);
   }
 };
 
 // Create a new deposit request
 const createDepositRequest = async (req, res) => {
   try {
-    const userId = req.user.id; 
+    const userId = req.user.id;
     const { method_id, amount, transaction_reference } = req.body;
 
     if (!method_id || !amount) {
-      return res.status(400).json({ message: "Method and amount are required." });
+      return resError(res, "Method and amount are required.", 400);
     }
 
     const method = await DepositMethod.findByPk(method_id);
     if (!method || method.status !== "active") {
-      return res.status(404).json({ message: "Deposit method not found or inactive." });
+      return resError(res, "Deposit method not found or inactive.", 404);
     }
 
     let proofPath = null;
@@ -57,19 +57,18 @@ const createDepositRequest = async (req, res) => {
       status: "pending",
     });
 
-    // Fetch user details
     const user = await User.findByPk(userId);
 
-    // Email setup
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${user.full_name},</h2>
         <p style="font-size: 15px; line-height: 1.6;">
-          We have received your deposit request of <strong>$${amount}</strong>. 
+          We have received your deposit request of <strong>$${amount}</strong>.
         </p>
         <p style="font-size: 15px; line-height: 1.6;">
           Our review team will verify your deposit and update your wallet balance as soon as possible. You will be notified once it's processed.
@@ -85,10 +84,10 @@ const createDepositRequest = async (req, res) => {
 
     await sendEmail(user.email, "EquityFX: Deposit Request Submitted", emailHtml);
 
-    res.status(201).json({ message: "Deposit request submitted successfully." });
+    resSuccess(res, { message: "Deposit request submitted successfully." }, 201);
   } catch (error) {
     console.error("Error in createDepositRequest:", error);
-    res.status(500).json({ message: "Server error while creating deposit request." });
+    resError(res, error.message);
   }
 };
 

@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const { User, KycDocument, WithdrawalMethod } = require("../models");
 const { sendEmail } = require("../utils/emailUtil");
+const { resSuccess, resError } = require("../utils/responseUtil");
 
 // === Get profile info ===
 const getProfile = async (req, res) => {
@@ -10,13 +11,13 @@ const getProfile = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return resError(res, "User not found.", 404);
     }
 
-    res.status(200).json({ user });
+    resSuccess(res, { user });
   } catch (error) {
     console.error("Error in getProfile:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -27,7 +28,7 @@ const updateProfile = async (req, res) => {
 
     const user = await User.findByPk(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return resError(res, "User not found.", 404);
     }
 
     user.full_name = full_name ?? user.full_name;
@@ -36,10 +37,10 @@ const updateProfile = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({ message: "Profile updated successfully." });
+    resSuccess(res, { message: "Profile updated successfully." });
   } catch (error) {
     console.error("Error in updateProfile:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -50,7 +51,7 @@ const uploadKycDocument = async (req, res) => {
     const document_path = req.file?.path;
 
     if (!document_type || !document_path) {
-      return res.status(400).json({ message: "Document type and file are required." });
+      return resError(res, "Document type and file are required.", 400);
     }
 
     const userId = req.user.id;
@@ -74,7 +75,6 @@ const uploadKycDocument = async (req, res) => {
 
     const user = await User.findByPk(userId);
 
-    // Map internal keys to friendly labels
     const documentTypeMap = {
       id_card: "Identity Card",
       drivers_license: "Driver’s License",
@@ -83,9 +83,10 @@ const uploadKycDocument = async (req, res) => {
     const documentTypeLabel = documentTypeMap[document_type] || "KYC Document";
 
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${user.full_name},</h2>
@@ -103,10 +104,10 @@ const uploadKycDocument = async (req, res) => {
 
     await sendEmail(user.email, "EquityFX: KYC Document Submitted", emailHtml);
 
-    return res.status(201).json({ message: "KYC document uploaded successfully and pending review." });
+    resSuccess(res, { message: "KYC document uploaded successfully and pending review." }, 201);
   } catch (error) {
     console.error("Error in uploadKycDocument:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -118,10 +119,10 @@ const getKycDocuments = async (req, res) => {
       order: [["submitted_at", "DESC"]],
     });
 
-    res.status(200).json({ documents });
+    resSuccess(res, { documents });
   } catch (error) {
     console.error("Error in getKycDocuments:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -132,7 +133,7 @@ const addWithdrawalMethod = async (req, res) => {
       req.body;
 
     if (!type) {
-      return res.status(400).json({ message: "Withdrawal method type is required." });
+      return resError(res, "Withdrawal method type is required.", 400);
     }
 
     await WithdrawalMethod.create({
@@ -149,10 +150,10 @@ const addWithdrawalMethod = async (req, res) => {
       status: "active",
     });
 
-    res.status(201).json({ message: "Withdrawal method added successfully." });
+    resSuccess(res, { message: "Withdrawal method added successfully." }, 201);
   } catch (error) {
     console.error("Error in addWithdrawalMethod:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -164,10 +165,10 @@ const getWithdrawalMethods = async (req, res) => {
       order: [["created_at", "DESC"]],
     });
 
-    res.status(200).json({ methods });
+    resSuccess(res, { methods });
   } catch (error) {
     console.error("Error in getWithdrawalMethods:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -177,17 +178,17 @@ const changePassword = async (req, res) => {
     const { current_password, new_password } = req.body;
 
     if (!current_password || !new_password) {
-      return res.status(400).json({ message: "Current and new passwords are required." });
+      return resError(res, "Current and new passwords are required.", 400);
     }
 
     const user = await User.findByPk(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return resError(res, "User not found.", 404);
     }
 
     const isMatch = await bcrypt.compare(current_password, user.password_hash);
     if (!isMatch) {
-      return res.status(400).json({ message: "Current password is incorrect." });
+      return resError(res, "Current password is incorrect.", 400);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -196,10 +197,10 @@ const changePassword = async (req, res) => {
     user.password_hash = password_hash;
     await user.save();
 
-    res.status(200).json({ message: "Password changed successfully." });
+    resSuccess(res, { message: "Password changed successfully." });
   } catch (error) {
     console.error("Error in changePassword:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 

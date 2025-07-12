@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { User } = require("../models");
 const { sendEmail } = require("../utils/emailUtil");
+const { resSuccess, resError } = require("../utils/responseUtil");
 require("dotenv").config();
 
 /* ---------- Register ---------- */
@@ -11,7 +12,7 @@ const register = async (req, res) => {
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already in use." });
+      return resError(res, "Email already in use.", 400);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -30,19 +31,18 @@ const register = async (req, res) => {
     });
 
     const verifyUrl = `${process.env.NODE_TRADERSROOM_CLIENT_URL}/verify-email?token=${verification_token}`;
-
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${full_name},</h2>
         <p style="font-size: 15px; line-height: 1.6;">
           Thank you for registering with EquityFX. Please verify your email to activate your account.
         </p>
-        <div style="text-align: center; margin: 30px 0;">
+        <div style="margin: 30px 0;">
           <a href="${verifyUrl}" style="background-color: #309f6d; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
             Verify Email
           </a>
@@ -58,10 +58,10 @@ const register = async (req, res) => {
 
     await sendEmail(email, "EquityFX: Verify Your Email", emailHtml);
 
-    res.status(201).json({ message: "Registration successful! Please check your email to verify your account." });
+    resSuccess(res, { message: "Registration successful! Please check your email to verify your account." }, 201);
   } catch (err) {
     console.error("Error in register:", err);
-    res.status(500).json({ message: "Server error." });
+    resError(res, err.message);
   }
 };
 
@@ -71,17 +71,17 @@ const verifyEmail = async (req, res) => {
   try {
     const user = await User.findOne({ where: { verification_token: token } });
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired verification token." });
+      return resError(res, "Invalid or expired verification token.", 400);
     }
 
     user.email_verified = true;
     user.verification_token = null;
     await user.save();
 
-    res.status(200).json({ message: "Email verified successfully. You can now log in." });
+    resSuccess(res, { message: "Email verified successfully. You can now log in." });
   } catch (err) {
     console.error("Error in verifyEmail:", err);
-    res.status(500).json({ message: "Server error." });
+    resError(res, err.message);
   }
 };
 
@@ -91,16 +91,16 @@ const login = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or password." });
+      return resError(res, "Invalid email or password.", 400);
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password." });
+      return resError(res, "Invalid email or password.", 400);
     }
 
     if (!user.email_verified) {
-      return res.status(400).json({ message: "Please verify your email before logging in." });
+      return resError(res, "Please verify your email before logging in.", 400);
     }
 
     const payload = {
@@ -112,7 +112,7 @@ const login = async (req, res) => {
       expiresIn: "1d",
     });
 
-    res.status(200).json({
+    resSuccess(res, {
       message: "Login successful.",
       token,
       user: {
@@ -126,7 +126,7 @@ const login = async (req, res) => {
     });
   } catch (err) {
     console.error("Error in login:", err);
-    res.status(500).json({ message: "Server error." });
+    resError(res, err.message);
   }
 };
 
@@ -136,7 +136,7 @@ const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(400).json({ message: "User with this email does not exist." });
+      return resError(res, "User with this email does not exist.", 400);
     }
 
     const reset_token = crypto.randomBytes(32).toString("hex");
@@ -150,15 +150,15 @@ const forgotPassword = async (req, res) => {
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${user.full_name},</h2>
         <p style="font-size: 15px; line-height: 1.6;">
           We received a request to reset your password for your EquityFX account.
         </p>
-        <div style="text-align: center; margin: 30px 0;">
+        <div style="margin: 30px 0;">
           <a href="${resetUrl}" style="background-color: #309f6d; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
             Reset Password
           </a>
@@ -174,10 +174,10 @@ const forgotPassword = async (req, res) => {
 
     await sendEmail(email, "EquityFX: Password Reset Request", emailHtml);
 
-    res.status(200).json({ message: "Password reset email sent." });
+    resSuccess(res, { message: "Password reset email sent." });
   } catch (err) {
     console.error("Error in forgotPassword:", err);
-    res.status(500).json({ message: "Server error." });
+    resError(res, err.message);
   }
 };
 
@@ -188,7 +188,7 @@ const resetPassword = async (req, res) => {
   try {
     const user = await User.findOne({ where: { reset_token: token } });
     if (!user || user.reset_token_expiry < new Date()) {
-      return res.status(400).json({ message: "Invalid or expired reset token." });
+      return resError(res, "Invalid or expired reset token.", 400);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -199,10 +199,10 @@ const resetPassword = async (req, res) => {
     user.reset_token_expiry = null;
     await user.save();
 
-    res.status(200).json({ message: "Password reset successful. You can now log in." });
+    resSuccess(res, { message: "Password reset successful. You can now log in." });
   } catch (err) {
     console.error("Error in resetPassword:", err);
-    res.status(500).json({ message: "Server error." });
+    resError(res, err.message);
   }
 };
 
