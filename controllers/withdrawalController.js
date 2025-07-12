@@ -1,4 +1,5 @@
-const { WithdrawalMethod, WithdrawalRequest, WalletTransaction, KycDocument } = require("../models");
+const { WithdrawalMethod, WithdrawalRequest, WalletTransaction, KycDocument, User } = require("../models");
+const { sendEmail } = require("../utils/emailUtil");
 
 const getActiveWithdrawalMethodsByUserId = async (req, res) => {
   try {
@@ -27,19 +28,42 @@ const createWithdrawalRequest = async (req, res) => {
 
     const method = await WithdrawalMethod.findOne({
       where: { id: method_id, user_id: userId, status: "active" },
+      include: [{ model: User, attributes: ["full_name", "email"] }],
     });
 
     if (!method) {
       return res.status(404).json({ message: "Withdrawal method not found or inactive." });
     }
 
-    await WithdrawalRequest.create({
+    const withdrawalRequest = await WithdrawalRequest.create({
       user_id: userId,
       method_id,
       amount,
       note: note || null,
       status: "pending",
     });
+
+    // Email setup
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${method.User.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          Your withdrawal request for <strong>$${amount}</strong> has been submitted successfully.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          Our team will review and process your request as soon as possible. You will receive a notification once it is approved or if any additional information is required.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(method.User.email, "EquityFX: Withdrawal Request Submitted", emailHtml);
 
     res.status(201).json({ message: "Withdrawal request submitted successfully." });
   } catch (error) {
