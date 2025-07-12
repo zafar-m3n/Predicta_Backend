@@ -215,13 +215,28 @@ const approveDepositRequest = async (req, res) => {
       description: "Deposit approved by admin",
     });
 
-    await sendEmail(
-      depositRequest.User.email,
-      "Deposit Request Approved",
-      `<p>Hello ${depositRequest.User.full_name},</p>
-       <p>Your deposit request of $${depositRequest.amount} has been approved. Your wallet balance has been updated.</p>
-       <p>Thank you for using Traders Room.</p>`
-    );
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${depositRequest.User.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          We are pleased to inform you that your deposit request of <strong>$${depositRequest.amount}</strong> has been <strong>approved</strong>.
+          Your wallet balance has been updated accordingly.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          Thank you for choosing EquityFX. We look forward to supporting your trading journey.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(depositRequest.User.email, "EquityFX: Deposit Request Approved", emailHtml);
 
     res.status(200).json({ message: "Deposit request approved and wallet updated." });
   } catch (error) {
@@ -251,14 +266,30 @@ const rejectDepositRequest = async (req, res) => {
     depositRequest.admin_note = admin_note || "Rejected by admin";
     await depositRequest.save();
 
-    await sendEmail(
-      depositRequest.User.email,
-      "Deposit Request Rejected",
-      `<p>Hello ${depositRequest.User.full_name},</p>
-       <p>Your deposit request of $${depositRequest.amount} has been rejected.</p>
-       <p>Reason: ${depositRequest.admin_note}</p>
-       <p>If you have any questions, please contact support.</p>`
-    );
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${depositRequest.User.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          We regret to inform you that your deposit request of <strong>$${depositRequest.amount}</strong> has been <strong>rejected</strong>.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          <strong>Reason:</strong> ${depositRequest.admin_note}
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          If you have any questions or need further clarification, please contact our support team.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(depositRequest.User.email, "EquityFX: Deposit Request Rejected", emailHtml);
 
     res.status(200).json({ message: "Deposit request rejected and user notified." });
   } catch (error) {
