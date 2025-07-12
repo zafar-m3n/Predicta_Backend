@@ -37,6 +37,7 @@ const adminWithdrawalRequestRoutes = require("./routes/admin/withdrawalRequestRo
 const adminKycRoutes = require("./routes/admin/kycRoutes");
 const adminUserRoutes = require("./routes/admin/userRoutes");
 const adminSupportRoutes = require("./routes/admin/supportRoutes");
+const adminDashboardRoutes = require("./routes/admin/dashboardRoutes");
 const clientDepositRoutes = require("./routes/depositRoutes");
 const clientWithdrawalRoutes = require("./routes/withdrawalRoutes");
 const clientWalletRoutes = require("./routes/walletRoutes");
@@ -51,6 +52,7 @@ app.use("/api/v1/admin/withdrawal-requests", adminWithdrawalRequestRoutes);
 app.use("/api/v1/admin/kyc-documents", adminKycRoutes);
 app.use("/api/v1/admin/users", adminUserRoutes);
 app.use("/api/v1/admin/support-tickets", adminSupportRoutes);
+app.use("/api/v1/admin/dashboard", adminDashboardRoutes); 
 app.use("/api/v1/client", clientDepositRoutes);
 app.use("/api/v1/client", clientWithdrawalRoutes);
 app.use("/api/v1/client/wallet", clientWalletRoutes);
