@@ -1,5 +1,6 @@
 const { User, DepositRequest, WithdrawalRequest, KycDocument, SupportTicket } = require("../../models");
 const { Op } = require("sequelize");
+const { resSuccess, resError } = require("../../utils/responseUtil");
 
 // Get Admin Dashboard Stats
 const getDashboardStats = async (req, res) => {
@@ -40,48 +41,42 @@ const getDashboardStats = async (req, res) => {
       },
     });
 
-    // Send new formatted response
-    res.status(200).json({
-      code: "OK",
-      data: {
-        users: {
-          total: totalUsers,
-          clients: totalClients,
-          verifiedEmails,
-        },
-        deposits: {
-          total: totalDeposits,
-          pending: pendingDeposits,
-          approved: approvedDeposits,
-          rejected: rejectedDeposits,
-          totalAmount: totalDepositAmount || 0,
-        },
-        withdrawals: {
-          total: totalWithdrawals,
-          pending: pendingWithdrawals,
-          approved: approvedWithdrawals,
-          rejected: rejectedWithdrawals,
-          totalAmount: totalWithdrawAmount || 0,
-        },
-        kyc: {
-          total: totalKyc,
-          pending: pendingKyc,
-          approved: approvedKyc,
-          rejected: rejectedKyc,
-        },
-        tickets: {
-          total: totalTickets,
-          open: openTickets,
-          closed: closedTickets,
-        },
+    // Send response using helper
+    resSuccess(res, {
+      users: {
+        total: totalUsers,
+        clients: totalClients,
+        verifiedEmails,
+      },
+      deposits: {
+        total: totalDeposits,
+        pending: pendingDeposits,
+        approved: approvedDeposits,
+        rejected: rejectedDeposits,
+        totalAmount: totalDepositAmount || 0,
+      },
+      withdrawals: {
+        total: totalWithdrawals,
+        pending: pendingWithdrawals,
+        approved: approvedWithdrawals,
+        rejected: rejectedWithdrawals,
+        totalAmount: totalWithdrawAmount || 0,
+      },
+      kyc: {
+        total: totalKyc,
+        pending: pendingKyc,
+        approved: approvedKyc,
+        rejected: rejectedKyc,
+      },
+      tickets: {
+        total: totalTickets,
+        open: openTickets,
+        closed: closedTickets,
       },
     });
   } catch (error) {
     console.error("Error in getDashboardStats:", error);
-    res.status(500).json({
-      code: "ERROR",
-      error: error.message,
-    });
+    resError(res, error.message);
   }
 };
 

@@ -1,5 +1,6 @@
 const { KycDocument, User } = require("../../models");
 const { sendEmail } = require("../../utils/emailUtil");
+const { resSuccess, resError } = require("../../utils/responseUtil");
 
 const getAllKycDocuments = async (req, res) => {
   try {
@@ -24,7 +25,7 @@ const getAllKycDocuments = async (req, res) => {
       limit: parseInt(limit),
     });
 
-    res.status(200).json({
+    resSuccess(res, {
       total: count,
       page: parseInt(page),
       totalPages: Math.ceil(count / limit),
@@ -32,7 +33,7 @@ const getAllKycDocuments = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getAllKycDocuments:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -45,11 +46,11 @@ const approveKycDocument = async (req, res) => {
     });
 
     if (!kycDoc) {
-      return res.status(404).json({ message: "KYC document not found." });
+      return resError(res, "KYC document not found.", 404);
     }
 
     if (kycDoc.status !== "pending") {
-      return res.status(400).json({ message: "Only pending documents can be approved." });
+      return resError(res, "Only pending documents can be approved.", 400);
     }
 
     kycDoc.status = "approved";
@@ -65,8 +66,8 @@ const approveKycDocument = async (req, res) => {
     const documentTypeLabel = documentTypeMap[kycDoc.document_type] || "KYC Document";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${kycDoc.User.full_name},</h2>
@@ -84,10 +85,10 @@ const approveKycDocument = async (req, res) => {
 
     await sendEmail(kycDoc.User.email, "EquityFX: KYC Document Approved", emailHtml);
 
-    res.status(200).json({ message: "KYC document approved and user notified." });
+    resSuccess(res, { message: "KYC document approved and user notified." });
   } catch (error) {
     console.error("Error in approveKycDocument:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -101,11 +102,11 @@ const rejectKycDocument = async (req, res) => {
     });
 
     if (!kycDoc) {
-      return res.status(404).json({ message: "KYC document not found." });
+      return resError(res, "KYC document not found.", 404);
     }
 
     if (kycDoc.status !== "pending") {
-      return res.status(400).json({ message: "Only pending documents can be rejected." });
+      return resError(res, "Only pending documents can be rejected.", 400);
     }
 
     kycDoc.status = "rejected";
@@ -122,8 +123,8 @@ const rejectKycDocument = async (req, res) => {
     const documentTypeLabel = documentTypeMap[kycDoc.document_type] || "KYC Document";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${kycDoc.User.full_name},</h2>
@@ -144,10 +145,10 @@ const rejectKycDocument = async (req, res) => {
 
     await sendEmail(kycDoc.User.email, "EquityFX: KYC Document Rejected", emailHtml);
 
-    res.status(200).json({ message: "KYC document rejected and user notified." });
+    resSuccess(res, { message: "KYC document rejected and user notified." });
   } catch (error) {
     console.error("Error in rejectKycDocument:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 

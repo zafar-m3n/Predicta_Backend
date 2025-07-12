@@ -8,13 +8,14 @@ const {
   User,
 } = require("../../models");
 const { sendEmail } = require("../../utils/emailUtil");
+const { resSuccess, resError } = require("../../utils/responseUtil");
 
 const createDepositMethod = async (req, res) => {
   try {
     const { type, name, status } = req.body;
 
     if (!type || !name) {
-      return res.status(400).json({ code: "ERROR", error: "Type and name are required." });
+      return resError(res, "Type and name are required.", 400);
     }
 
     const depositMethod = await DepositMethod.create({
@@ -60,10 +61,10 @@ const createDepositMethod = async (req, res) => {
       });
     }
 
-    res.status(201).json({ code: "OK", data: { message: "Deposit method created successfully." } });
+    resSuccess(res, { message: "Deposit method created successfully." }, 201);
   } catch (error) {
     console.error("Error in createDepositMethod:", error);
-    res.status(500).json({ code: "ERROR", error: error.message });
+    resError(res, error.message);
   }
 };
 
@@ -78,18 +79,15 @@ const getAllDepositMethods = async (req, res) => {
       order: [["created_at", "DESC"]],
     });
 
-    res.status(200).json({
-      code: "OK",
-      data: {
-        total: count,
-        page: parseInt(page),
-        totalPages: Math.ceil(count / limit),
-        methods: rows,
-      },
+    resSuccess(res, {
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit),
+      methods: rows,
     });
   } catch (error) {
     console.error("Error in getAllDepositMethods:", error);
-    res.status(500).json({ code: "ERROR", error: error.message });
+    resError(res, error.message);
   }
 };
 
@@ -99,7 +97,7 @@ const getDepositMethodById = async (req, res) => {
 
     const method = await DepositMethod.findByPk(id);
     if (!method) {
-      return res.status(404).json({ code: "ERROR", error: "Deposit method not found." });
+      return resError(res, "Deposit method not found.", 404);
     }
 
     let details = null;
@@ -111,10 +109,10 @@ const getDepositMethodById = async (req, res) => {
       details = await DepositMethodOtherDetail.findOne({ where: { method_id: id } });
     }
 
-    res.status(200).json({ code: "OK", data: { method, details } });
+    resSuccess(res, { method, details });
   } catch (error) {
     console.error("Error in getDepositMethodById:", error);
-    res.status(500).json({ code: "ERROR", error: error.message });
+    resError(res, error.message);
   }
 };
 
@@ -125,7 +123,7 @@ const updateDepositMethod = async (req, res) => {
 
     const method = await DepositMethod.findByPk(id);
     if (!method) {
-      return res.status(404).json({ code: "ERROR", error: "Deposit method not found." });
+      return resError(res, "Deposit method not found.", 404);
     }
 
     method.name = name ?? method.name;
@@ -164,10 +162,10 @@ const updateDepositMethod = async (req, res) => {
       );
     }
 
-    res.status(200).json({ code: "OK", data: { message: "Deposit method updated successfully." } });
+    resSuccess(res, { message: "Deposit method updated successfully." });
   } catch (error) {
     console.error("Error in updateDepositMethod:", error);
-    res.status(500).json({ code: "ERROR", error: error.message });
+    resError(res, error.message);
   }
 };
 
@@ -178,19 +176,16 @@ const toggleDepositMethodStatus = async (req, res) => {
 
     const method = await DepositMethod.findByPk(id);
     if (!method) {
-      return res.status(404).json({ code: "ERROR", error: "Deposit method not found." });
+      return resError(res, "Deposit method not found.", 404);
     }
 
     method.status = status;
     await method.save();
 
-    res.status(200).json({
-      code: "OK",
-      data: { message: `Deposit method status updated to ${status}.` },
-    });
+    resSuccess(res, { message: `Deposit method status updated to ${status}.` });
   } catch (error) {
     console.error("Error in toggleDepositMethodStatus:", error);
-    res.status(500).json({ code: "ERROR", error: error.message });
+    resError(res, error.message);
   }
 };
 
@@ -203,11 +198,11 @@ const approveDepositRequest = async (req, res) => {
     });
 
     if (!depositRequest) {
-      return res.status(404).json({ code: "ERROR", error: "Deposit request not found." });
+      return resError(res, "Deposit request not found.", 404);
     }
 
     if (depositRequest.status !== "pending") {
-      return res.status(400).json({ code: "ERROR", error: "Only pending requests can be approved." });
+      return resError(res, "Only pending requests can be approved.", 400);
     }
 
     depositRequest.status = "approved";
@@ -244,10 +239,10 @@ const approveDepositRequest = async (req, res) => {
 
     await sendEmail(depositRequest.User.email, "EquityFX: Deposit Request Approved", emailHtml);
 
-    res.status(200).json({ code: "OK", data: { message: "Deposit request approved and wallet updated." } });
+    resSuccess(res, { message: "Deposit request approved and wallet updated." });
   } catch (error) {
     console.error("Error in approveDepositRequest:", error);
-    res.status(500).json({ code: "ERROR", error: error.message });
+    resError(res, error.message);
   }
 };
 
@@ -261,11 +256,11 @@ const rejectDepositRequest = async (req, res) => {
     });
 
     if (!depositRequest) {
-      return res.status(404).json({ code: "ERROR", error: "Deposit request not found." });
+      return resError(res, "Deposit request not found.", 404);
     }
 
     if (depositRequest.status !== "pending") {
-      return res.status(400).json({ code: "ERROR", error: "Only pending requests can be rejected." });
+      return resError(res, "Only pending requests can be rejected.", 400);
     }
 
     depositRequest.status = "rejected";
@@ -297,10 +292,10 @@ const rejectDepositRequest = async (req, res) => {
 
     await sendEmail(depositRequest.User.email, "EquityFX: Deposit Request Rejected", emailHtml);
 
-    res.status(200).json({ code: "OK", data: { message: "Deposit request rejected and user notified." } });
+    resSuccess(res, { message: "Deposit request rejected and user notified." });
   } catch (error) {
     console.error("Error in rejectDepositRequest:", error);
-    res.status(500).json({ code: "ERROR", error: error.message });
+    resError(res, error.message);
   }
 };
 
@@ -325,18 +320,15 @@ const getAllDepositRequests = async (req, res) => {
       limit: parseInt(limit),
     });
 
-    res.status(200).json({
-      code: "OK",
-      data: {
-        total: count,
-        page: parseInt(page),
-        totalPages: Math.ceil(count / limit),
-        requests: rows,
-      },
+    resSuccess(res, {
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit),
+      requests: rows,
     });
   } catch (error) {
     console.error("Error in getAllDepositRequests:", error);
-    res.status(500).json({ code: "ERROR", error: error.message });
+    resError(res, error.message);
   }
 };
 

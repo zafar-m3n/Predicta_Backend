@@ -1,5 +1,6 @@
 const { WithdrawalRequest, WithdrawalMethod, User, WalletTransaction } = require("../../models");
 const { sendEmail } = require("../../utils/emailUtil");
+const { resSuccess, resError } = require("../../utils/responseUtil");
 
 const getAllWithdrawalRequests = async (req, res) => {
   try {
@@ -22,7 +23,7 @@ const getAllWithdrawalRequests = async (req, res) => {
       limit: parseInt(limit),
     });
 
-    res.status(200).json({
+    resSuccess(res, {
       total: count,
       page: parseInt(page),
       totalPages: Math.ceil(count / limit),
@@ -30,7 +31,7 @@ const getAllWithdrawalRequests = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getAllWithdrawalRequests:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -43,11 +44,11 @@ const approveWithdrawalRequest = async (req, res) => {
     });
 
     if (!withdrawalRequest) {
-      return res.status(404).json({ message: "Withdrawal request not found." });
+      return resError(res, "Withdrawal request not found.", 404);
     }
 
     if (withdrawalRequest.status !== "pending") {
-      return res.status(400).json({ message: "Only pending requests can be approved." });
+      return resError(res, "Only pending requests can be approved.", 400);
     }
 
     withdrawalRequest.status = "approved";
@@ -64,8 +65,8 @@ const approveWithdrawalRequest = async (req, res) => {
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${withdrawalRequest.User.full_name},</h2>
@@ -83,10 +84,10 @@ const approveWithdrawalRequest = async (req, res) => {
 
     await sendEmail(withdrawalRequest.User.email, "EquityFX: Withdrawal Request Approved", emailHtml);
 
-    res.status(200).json({ message: "Withdrawal request approved and wallet updated." });
+    resSuccess(res, { message: "Withdrawal request approved and wallet updated." });
   } catch (error) {
     console.error("Error in approveWithdrawalRequest:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -100,11 +101,11 @@ const rejectWithdrawalRequest = async (req, res) => {
     });
 
     if (!withdrawalRequest) {
-      return res.status(404).json({ message: "Withdrawal request not found." });
+      return resError(res, "Withdrawal request not found.", 404);
     }
 
     if (withdrawalRequest.status !== "pending") {
-      return res.status(400).json({ message: "Only pending requests can be rejected." });
+      return resError(res, "Only pending requests can be rejected.", 400);
     }
 
     withdrawalRequest.status = "rejected";
@@ -114,8 +115,8 @@ const rejectWithdrawalRequest = async (req, res) => {
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${withdrawalRequest.User.full_name},</h2>
@@ -136,10 +137,10 @@ const rejectWithdrawalRequest = async (req, res) => {
 
     await sendEmail(withdrawalRequest.User.email, "EquityFX: Withdrawal Request Rejected", emailHtml);
 
-    res.status(200).json({ message: "Withdrawal request rejected and user notified." });
+    resSuccess(res, { message: "Withdrawal request rejected and user notified." });
   } catch (error) {
     console.error("Error in rejectWithdrawalRequest:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 

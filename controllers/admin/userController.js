@@ -1,5 +1,6 @@
 const { User, KycDocument, DepositRequest, WalletTransaction, WithdrawalMethod } = require("../../models");
 const bcrypt = require("bcrypt");
+const { resSuccess, resError } = require("../../utils/responseUtil");
 
 // Create a new user
 const createUser = async (req, res) => {
@@ -7,12 +8,12 @@ const createUser = async (req, res) => {
     const { full_name, email, phone_number, country_code, password, role } = req.body;
 
     if (!full_name || !email || !password) {
-      return res.status(400).json({ message: "Full name, email, and password are required." });
+      return resError(res, "Full name, email, and password are required.", 400);
     }
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ message: "A user with this email already exists." });
+      return resError(res, "A user with this email already exists.", 400);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -28,10 +29,10 @@ const createUser = async (req, res) => {
       email_verified: false,
     });
 
-    res.status(201).json({ message: "User created successfully.", user: newUser });
+    resSuccess(res, { message: "User created successfully.", user: newUser }, 201);
   } catch (error) {
     console.error("Error in createUser:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -48,7 +49,7 @@ const getAllUsers = async (req, res) => {
       attributes: { exclude: ["password_hash", "verification_token", "reset_token", "reset_token_expiry"] },
     });
 
-    res.status(200).json({
+    resSuccess(res, {
       total: count,
       page: parseInt(page),
       totalPages: Math.ceil(count / limit),
@@ -56,7 +57,7 @@ const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getAllUsers:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -76,13 +77,13 @@ const getUserById = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return resError(res, "User not found.", 404);
     }
 
-    res.status(200).json({ user });
+    resSuccess(res, { user });
   } catch (error) {
     console.error("Error in getUserById:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -94,14 +95,14 @@ const updateUser = async (req, res) => {
 
     const user = await User.findByPk(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return resError(res, "User not found.", 404);
     }
 
-    // Check if email is changing and if so, ensure it is unique
+    // Check if email is changing and ensure it's unique
     if (email && email !== user.email) {
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
-        return res.status(400).json({ message: "A user with this email already exists." });
+        return resError(res, "A user with this email already exists.", 400);
       }
       user.email = email;
     }
@@ -119,10 +120,10 @@ const updateUser = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({ message: "User updated successfully.", user });
+    resSuccess(res, { message: "User updated successfully.", user });
   } catch (error) {
     console.error("Error in updateUser:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -133,15 +134,15 @@ const deleteUser = async (req, res) => {
 
     const user = await User.findByPk(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return resError(res, "User not found.", 404);
     }
 
     await user.destroy();
 
-    res.status(200).json({ message: "User deleted successfully." });
+    resSuccess(res, { message: "User deleted successfully." });
   } catch (error) {
     console.error("Error in deleteUser:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 

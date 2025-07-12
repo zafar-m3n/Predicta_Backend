@@ -1,5 +1,6 @@
 const { SupportTicket, SupportTicketMessage, User } = require("../../models");
 const { sendEmail } = require("../../utils/emailUtil");
+const { resSuccess, resError } = require("../../utils/responseUtil");
 
 // Get all tickets
 const getAllTickets = async (req, res) => {
@@ -20,7 +21,7 @@ const getAllTickets = async (req, res) => {
       limit: parseInt(limit),
     });
 
-    res.status(200).json({
+    resSuccess(res, {
       total: count,
       page: parseInt(page),
       totalPages: Math.ceil(count / limit),
@@ -28,7 +29,7 @@ const getAllTickets = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getAllTickets:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -45,13 +46,13 @@ const getTicketById = async (req, res) => {
     });
 
     if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found." });
+      return resError(res, "Ticket not found.", 404);
     }
 
-    res.status(200).json({ ticket });
+    resSuccess(res, { ticket });
   } catch (error) {
     console.error("Error in getTicketById:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -62,7 +63,7 @@ const sendMessageToTicket = async (req, res) => {
     const { message } = req.body;
 
     if (!message) {
-      return res.status(400).json({ message: "Message is required." });
+      return resError(res, "Message is required.", 400);
     }
 
     const ticket = await SupportTicket.findByPk(id, {
@@ -70,7 +71,7 @@ const sendMessageToTicket = async (req, res) => {
     });
 
     if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found." });
+      return resError(res, "Ticket not found.", 404);
     }
 
     let attachmentPath = null;
@@ -88,8 +89,8 @@ const sendMessageToTicket = async (req, res) => {
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${ticket.User.full_name},</h2>
@@ -105,13 +106,12 @@ const sendMessageToTicket = async (req, res) => {
       </div>
     `;
 
-    // Send email notification
     await sendEmail(ticket.User.email, "EquityFX: New Reply to Your Support Ticket", emailHtml);
 
-    res.status(201).json({ message: "Reply sent successfully and user notified." });
+    resSuccess(res, { message: "Reply sent successfully and user notified." }, 201);
   } catch (error) {
     console.error("Error in sendMessageToTicket:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
@@ -125,11 +125,11 @@ const closeTicket = async (req, res) => {
     });
 
     if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found." });
+      return resError(res, "Ticket not found.", 404);
     }
 
     if (ticket.status === "closed") {
-      return res.status(400).json({ message: "Ticket is already closed." });
+      return resError(res, "Ticket is already closed.", 400);
     }
 
     ticket.status = "closed";
@@ -138,8 +138,8 @@ const closeTicket = async (req, res) => {
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${ticket.User.full_name},</h2>
@@ -155,13 +155,12 @@ const closeTicket = async (req, res) => {
       </div>
     `;
 
-    // Send email
     await sendEmail(ticket.User.email, "EquityFX: Your Support Ticket Has Been Closed", emailHtml);
 
-    res.status(200).json({ message: "Ticket closed successfully and user notified." });
+    resSuccess(res, { message: "Ticket closed successfully and user notified." });
   } catch (error) {
     console.error("Error in closeTicket:", error);
-    res.status(500).json({ message: "Server error." });
+    resError(res, error.message);
   }
 };
 
