@@ -14,7 +14,7 @@ const createDepositMethod = async (req, res) => {
     const { type, name, status } = req.body;
 
     if (!type || !name) {
-      return res.status(400).json({ message: "Type and name are required." });
+      return res.status(400).json({ code: "ERROR", error: "Type and name are required." });
     }
 
     const depositMethod = await DepositMethod.create({
@@ -60,10 +60,10 @@ const createDepositMethod = async (req, res) => {
       });
     }
 
-    res.status(201).json({ message: "Deposit method created successfully." });
+    res.status(201).json({ code: "OK", data: { message: "Deposit method created successfully." } });
   } catch (error) {
     console.error("Error in createDepositMethod:", error);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ code: "ERROR", error: error.message });
   }
 };
 
@@ -79,14 +79,17 @@ const getAllDepositMethods = async (req, res) => {
     });
 
     res.status(200).json({
-      total: count,
-      page: parseInt(page),
-      totalPages: Math.ceil(count / limit),
-      methods: rows,
+      code: "OK",
+      data: {
+        total: count,
+        page: parseInt(page),
+        totalPages: Math.ceil(count / limit),
+        methods: rows,
+      },
     });
   } catch (error) {
     console.error("Error in getAllDepositMethods:", error);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ code: "ERROR", error: error.message });
   }
 };
 
@@ -96,7 +99,7 @@ const getDepositMethodById = async (req, res) => {
 
     const method = await DepositMethod.findByPk(id);
     if (!method) {
-      return res.status(404).json({ message: "Deposit method not found." });
+      return res.status(404).json({ code: "ERROR", error: "Deposit method not found." });
     }
 
     let details = null;
@@ -108,10 +111,10 @@ const getDepositMethodById = async (req, res) => {
       details = await DepositMethodOtherDetail.findOne({ where: { method_id: id } });
     }
 
-    res.status(200).json({ method, details });
+    res.status(200).json({ code: "OK", data: { method, details } });
   } catch (error) {
     console.error("Error in getDepositMethodById:", error);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ code: "ERROR", error: error.message });
   }
 };
 
@@ -122,7 +125,7 @@ const updateDepositMethod = async (req, res) => {
 
     const method = await DepositMethod.findByPk(id);
     if (!method) {
-      return res.status(404).json({ message: "Deposit method not found." });
+      return res.status(404).json({ code: "ERROR", error: "Deposit method not found." });
     }
 
     method.name = name ?? method.name;
@@ -161,10 +164,10 @@ const updateDepositMethod = async (req, res) => {
       );
     }
 
-    res.status(200).json({ message: "Deposit method updated successfully." });
+    res.status(200).json({ code: "OK", data: { message: "Deposit method updated successfully." } });
   } catch (error) {
     console.error("Error in updateDepositMethod:", error);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ code: "ERROR", error: error.message });
   }
 };
 
@@ -175,16 +178,19 @@ const toggleDepositMethodStatus = async (req, res) => {
 
     const method = await DepositMethod.findByPk(id);
     if (!method) {
-      return res.status(404).json({ message: "Deposit method not found." });
+      return res.status(404).json({ code: "ERROR", error: "Deposit method not found." });
     }
 
     method.status = status;
     await method.save();
 
-    res.status(200).json({ message: `Deposit method status updated to ${status}.` });
+    res.status(200).json({
+      code: "OK",
+      data: { message: `Deposit method status updated to ${status}.` },
+    });
   } catch (error) {
     console.error("Error in toggleDepositMethodStatus:", error);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ code: "ERROR", error: error.message });
   }
 };
 
@@ -197,11 +203,11 @@ const approveDepositRequest = async (req, res) => {
     });
 
     if (!depositRequest) {
-      return res.status(404).json({ message: "Deposit request not found." });
+      return res.status(404).json({ code: "ERROR", error: "Deposit request not found." });
     }
 
     if (depositRequest.status !== "pending") {
-      return res.status(400).json({ message: "Only pending requests can be approved." });
+      return res.status(400).json({ code: "ERROR", error: "Only pending requests can be approved." });
     }
 
     depositRequest.status = "approved";
@@ -218,8 +224,8 @@ const approveDepositRequest = async (req, res) => {
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${depositRequest.User.full_name},</h2>
@@ -238,10 +244,10 @@ const approveDepositRequest = async (req, res) => {
 
     await sendEmail(depositRequest.User.email, "EquityFX: Deposit Request Approved", emailHtml);
 
-    res.status(200).json({ message: "Deposit request approved and wallet updated." });
+    res.status(200).json({ code: "OK", data: { message: "Deposit request approved and wallet updated." } });
   } catch (error) {
     console.error("Error in approveDepositRequest:", error);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ code: "ERROR", error: error.message });
   }
 };
 
@@ -255,11 +261,11 @@ const rejectDepositRequest = async (req, res) => {
     });
 
     if (!depositRequest) {
-      return res.status(404).json({ message: "Deposit request not found." });
+      return res.status(404).json({ code: "ERROR", error: "Deposit request not found." });
     }
 
     if (depositRequest.status !== "pending") {
-      return res.status(400).json({ message: "Only pending requests can be rejected." });
+      return res.status(400).json({ code: "ERROR", error: "Only pending requests can be rejected." });
     }
 
     depositRequest.status = "rejected";
@@ -269,8 +275,8 @@ const rejectDepositRequest = async (req, res) => {
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; margin-bottom: 20px;">
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
+        <div style="margin-bottom: 20px;">
           <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${depositRequest.User.full_name},</h2>
@@ -291,10 +297,10 @@ const rejectDepositRequest = async (req, res) => {
 
     await sendEmail(depositRequest.User.email, "EquityFX: Deposit Request Rejected", emailHtml);
 
-    res.status(200).json({ message: "Deposit request rejected and user notified." });
+    res.status(200).json({ code: "OK", data: { message: "Deposit request rejected and user notified." } });
   } catch (error) {
     console.error("Error in rejectDepositRequest:", error);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ code: "ERROR", error: error.message });
   }
 };
 
@@ -320,14 +326,17 @@ const getAllDepositRequests = async (req, res) => {
     });
 
     res.status(200).json({
-      total: count,
-      page: parseInt(page),
-      totalPages: Math.ceil(count / limit),
-      requests: rows,
+      code: "OK",
+      data: {
+        total: count,
+        page: parseInt(page),
+        totalPages: Math.ceil(count / limit),
+        requests: rows,
+      },
     });
   } catch (error) {
     console.error("Error in getAllDepositRequests:", error);
-    res.status(500).json({ message: "Server error." });
+    res.status(500).json({ code: "ERROR", error: error.message });
   }
 };
 
