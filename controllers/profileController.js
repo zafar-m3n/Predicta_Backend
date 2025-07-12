@@ -74,6 +74,14 @@ const uploadKycDocument = async (req, res) => {
 
     const user = await User.findByPk(userId);
 
+    // Map internal keys to friendly labels
+    const documentTypeMap = {
+      id_card: "Identity Card",
+      drivers_license: "Driver’s License",
+      utility_bill: "Utility Bill",
+    };
+    const documentTypeLabel = documentTypeMap[document_type] || "KYC Document";
+
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
@@ -82,7 +90,7 @@ const uploadKycDocument = async (req, res) => {
         </div>
         <h2 style="color: #0a0a0a;">Hello ${user.full_name},</h2>
         <p style="font-size: 15px; line-height: 1.6;">
-          We have received your KYC document (<strong>${document_type}</strong>). It is now pending review by our verification team.
+          We have received your <strong>${documentTypeLabel}</strong>. It is now pending review by our verification team.
         </p>
         <p style="font-size: 15px; line-height: 1.6;">
           You will be notified once the verification process is complete. Thank you for helping us keep your account secure.

@@ -57,6 +57,12 @@ const approveKycDocument = async (req, res) => {
     await kycDoc.save();
 
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+    const documentTypeMap = {
+      id_card: "Identity Card",
+      drivers_license: "Driver’s License",
+      utility_bill: "Utility Bill",
+    };
+    const documentTypeLabel = documentTypeMap[kycDoc.document_type] || "KYC Document";
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
@@ -65,7 +71,7 @@ const approveKycDocument = async (req, res) => {
         </div>
         <h2 style="color: #0a0a0a;">Hello ${kycDoc.User.full_name},</h2>
         <p style="font-size: 15px; line-height: 1.6;">
-          We are pleased to inform you that your KYC document (<strong>${kycDoc.document_type}</strong>) has been <strong>approved</strong>.
+          We are pleased to inform you that your ${documentTypeLabel} has been <strong>approved</strong>.
         </p>
         <p style="font-size: 15px; line-height: 1.6;">
           Your account is now fully verified, and you can enjoy uninterrupted access to all features of EquityFX.
@@ -108,6 +114,12 @@ const rejectKycDocument = async (req, res) => {
     await kycDoc.save();
 
     const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+    const documentTypeMap = {
+      id_card: "Identity Card",
+      drivers_license: "Driver’s License",
+      utility_bill: "Utility Bill",
+    };
+    const documentTypeLabel = documentTypeMap[kycDoc.document_type] || "KYC Document";
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
@@ -116,7 +128,7 @@ const rejectKycDocument = async (req, res) => {
         </div>
         <h2 style="color: #0a0a0a;">Hello ${kycDoc.User.full_name},</h2>
         <p style="font-size: 15px; line-height: 1.6;">
-          We regret to inform you that your KYC document (<strong>${kycDoc.document_type}</strong>) has been <strong>rejected</strong>.
+          We regret to inform you that your ${documentTypeLabel} has been <strong>rejected</strong>.
         </p>
         <p style="font-size: 15px; line-height: 1.6;">
           <strong>Reason:</strong> ${kycDoc.admin_note}
