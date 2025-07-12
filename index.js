@@ -36,10 +36,12 @@ const adminDepositRequestRoutes = require("./routes/admin/depositRequestRoutes")
 const adminWithdrawalRequestRoutes = require("./routes/admin/withdrawalRequestRoutes");
 const adminKycRoutes = require("./routes/admin/kycRoutes");
 const adminUserRoutes = require("./routes/admin/userRoutes");
+const adminSupportRoutes = require("./routes/admin/supportRoutes");
 const clientDepositRoutes = require("./routes/depositRoutes");
 const clientWithdrawalRoutes = require("./routes/withdrawalRoutes");
 const clientWalletRoutes = require("./routes/walletRoutes");
 const clientProfileRoutes = require("./routes/profileRoutes");
+const clientSupportRoutes = require("./routes/supportRoutes");
 
 // ✅ Use Routes
 app.use("/api/v1/auth", authRoutes);
@@ -48,10 +50,12 @@ app.use("/api/v1/admin/deposit-requests", adminDepositRequestRoutes);
 app.use("/api/v1/admin/withdrawal-requests", adminWithdrawalRequestRoutes);
 app.use("/api/v1/admin/kyc-documents", adminKycRoutes);
 app.use("/api/v1/admin/users", adminUserRoutes);
+app.use("/api/v1/admin/support-tickets", adminSupportRoutes);
 app.use("/api/v1/client", clientDepositRoutes);
 app.use("/api/v1/client", clientWithdrawalRoutes);
 app.use("/api/v1/client/wallet", clientWalletRoutes);
 app.use("/api/v1/client/profile", clientProfileRoutes);
+app.use("/api/v1/client/support-tickets", clientSupportRoutes);
 
 // ✅ Root Route
 app.get("/", (req, res) => {
