@@ -40,42 +40,48 @@ const getDashboardStats = async (req, res) => {
       },
     });
 
-    // Send response
+    // Send new formatted response
     res.status(200).json({
-      users: {
-        total: totalUsers,
-        clients: totalClients,
-        verifiedEmails,
-      },
-      deposits: {
-        total: totalDeposits,
-        pending: pendingDeposits,
-        approved: approvedDeposits,
-        rejected: rejectedDeposits,
-        totalAmount: totalDepositAmount || 0,
-      },
-      withdrawals: {
-        total: totalWithdrawals,
-        pending: pendingWithdrawals,
-        approved: approvedWithdrawals,
-        rejected: rejectedWithdrawals,
-        totalAmount: totalWithdrawAmount || 0,
-      },
-      kyc: {
-        total: totalKyc,
-        pending: pendingKyc,
-        approved: approvedKyc,
-        rejected: rejectedKyc,
-      },
-      tickets: {
-        total: totalTickets,
-        open: openTickets,
-        closed: closedTickets,
+      code: "OK",
+      data: {
+        users: {
+          total: totalUsers,
+          clients: totalClients,
+          verifiedEmails,
+        },
+        deposits: {
+          total: totalDeposits,
+          pending: pendingDeposits,
+          approved: approvedDeposits,
+          rejected: rejectedDeposits,
+          totalAmount: totalDepositAmount || 0,
+        },
+        withdrawals: {
+          total: totalWithdrawals,
+          pending: pendingWithdrawals,
+          approved: approvedWithdrawals,
+          rejected: rejectedWithdrawals,
+          totalAmount: totalWithdrawAmount || 0,
+        },
+        kyc: {
+          total: totalKyc,
+          pending: pendingKyc,
+          approved: approvedKyc,
+          rejected: rejectedKyc,
+        },
+        tickets: {
+          total: totalTickets,
+          open: openTickets,
+          closed: closedTickets,
+        },
       },
     });
   } catch (error) {
     console.error("Error in getDashboardStats:", error);
-    res.status(500).json({ message: "Failed to fetch dashboard stats." });
+    res.status(500).json({
+      code: "ERROR",
+      error: error.message,
+    });
   }
 };
 
