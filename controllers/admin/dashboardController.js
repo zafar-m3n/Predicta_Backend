@@ -1,4 +1,4 @@
-const { User, DepositRequest, WithdrawalRequest, WalletTransaction, KycDocument, SupportTicket } = require("../../models");
+const { User, DepositRequest, WithdrawalRequest, KycDocument, SupportTicket } = require("../../models");
 const { Op } = require("sequelize");
 
 // Get Admin Dashboard Stats
@@ -6,7 +6,7 @@ const getDashboardStats = async (req, res) => {
   try {
     // Users
     const totalUsers = await User.count();
-    const totalAdmins = await User.count({ where: { role: "admin" } });
+    const totalClients = await User.count({ where: { role: "client" } });
     const verifiedEmails = await User.count({ where: { email_verified: true } });
 
     // Deposits
@@ -22,10 +22,6 @@ const getDashboardStats = async (req, res) => {
     const approvedWithdrawals = await WithdrawalRequest.count({ where: { status: "approved" } });
     const rejectedWithdrawals = await WithdrawalRequest.count({ where: { status: "rejected" } });
     const totalWithdrawAmount = await WithdrawalRequest.sum("amount", { where: { status: "approved" } });
-
-    // Wallet Transactions
-    const totalWalletTransactions = await WalletTransaction.count();
-    const totalWalletAmount = await WalletTransaction.sum("amount");
 
     // KYC Documents
     const totalKyc = await KycDocument.count();
@@ -48,7 +44,7 @@ const getDashboardStats = async (req, res) => {
     res.status(200).json({
       users: {
         total: totalUsers,
-        admins: totalAdmins,
+        clients: totalClients,
         verifiedEmails,
       },
       deposits: {
@@ -64,10 +60,6 @@ const getDashboardStats = async (req, res) => {
         approved: approvedWithdrawals,
         rejected: rejectedWithdrawals,
         totalAmount: totalWithdrawAmount || 0,
-      },
-      wallet: {
-        totalTransactions: totalWalletTransactions,
-        totalAmount: totalWalletAmount || 0,
       },
       kyc: {
         total: totalKyc,
