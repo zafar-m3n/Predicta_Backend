@@ -56,13 +56,27 @@ const approveKycDocument = async (req, res) => {
     kycDoc.verified_at = new Date();
     await kycDoc.save();
 
-    await sendEmail(
-      kycDoc.User.email,
-      "KYC Document Approved",
-      `<p>Hello ${kycDoc.User.full_name},</p>
-       <p>Your KYC document (${kycDoc.document_type}) has been approved successfully.</p>
-       <p>Thank you for verifying your identity with Traders Room.</p>`
-    );
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${kycDoc.User.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          We are pleased to inform you that your KYC document (<strong>${kycDoc.document_type}</strong>) has been <strong>approved</strong>.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          Your account is now fully verified, and you can enjoy uninterrupted access to all features of EquityFX.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(kycDoc.User.email, "EquityFX: KYC Document Approved", emailHtml);
 
     res.status(200).json({ message: "KYC document approved and user notified." });
   } catch (error) {
@@ -93,14 +107,30 @@ const rejectKycDocument = async (req, res) => {
     kycDoc.verified_at = new Date();
     await kycDoc.save();
 
-    await sendEmail(
-      kycDoc.User.email,
-      "KYC Document Rejected",
-      `<p>Hello ${kycDoc.User.full_name},</p>
-       <p>Your KYC document (${kycDoc.document_type}) has been rejected.</p>
-       <p>Reason: ${kycDoc.admin_note}</p>
-       <p>Please review and resubmit your document if necessary.</p>`
-    );
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${kycDoc.User.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          We regret to inform you that your KYC document (<strong>${kycDoc.document_type}</strong>) has been <strong>rejected</strong>.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          <strong>Reason:</strong> ${kycDoc.admin_note}
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          Please review your document and resubmit it to complete your verification with EquityFX.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(kycDoc.User.email, "EquityFX: KYC Document Rejected", emailHtml);
 
     res.status(200).json({ message: "KYC document rejected and user notified." });
   } catch (error) {
