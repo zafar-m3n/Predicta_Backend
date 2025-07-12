@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const { User, KycDocument, WithdrawalMethod } = require("../models");
+const { sendEmail } = require("../utils/emailUtil");
 
 // === Get profile info ===
 const getProfile = async (req, res) => {
@@ -52,29 +53,49 @@ const uploadKycDocument = async (req, res) => {
       return res.status(400).json({ message: "Document type and file are required." });
     }
 
-    // Check if document already exists
+    const userId = req.user.id;
+
     let kycDoc = await KycDocument.findOne({
-      where: { user_id: req.user.id, document_type },
+      where: { user_id: userId, document_type },
     });
 
     if (kycDoc) {
-      // Update existing document
       kycDoc.document_path = document_path;
       kycDoc.status = "pending";
       await kycDoc.save();
-
-      return res.status(200).json({ message: "KYC document uploaded successfully and pending review." });
     } else {
-      // Create new document
-      await KycDocument.create({
-        user_id: req.user.id,
+      kycDoc = await KycDocument.create({
+        user_id: userId,
         document_type,
         document_path,
         status: "pending",
       });
-
-      return res.status(201).json({ message: "KYC document uploaded successfully and pending review." });
     }
+
+    const user = await User.findByPk(userId);
+
+    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+        </div>
+        <h2 style="color: #0a0a0a;">Hello ${user.full_name},</h2>
+        <p style="font-size: 15px; line-height: 1.6;">
+          We have received your KYC document (<strong>${document_type}</strong>). It is now pending review by our verification team.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6;">
+          You will be notified once the verification process is complete. Thank you for helping us keep your account secure.
+        </p>
+        <p style="margin-top: 30px; font-size: 14px; color: #555;">
+          — The EquityFX Team
+        </p>
+      </div>
+    `;
+
+    await sendEmail(user.email, "EquityFX: KYC Document Submitted", emailHtml);
+
+    return res.status(201).json({ message: "KYC document uploaded successfully and pending review." });
   } catch (error) {
     console.error("Error in uploadKycDocument:", error);
     res.status(500).json({ message: "Server error." });
@@ -141,7 +162,6 @@ const getWithdrawalMethods = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
-
 
 // === Change password ===
 const changePassword = async (req, res) => {
