@@ -15,7 +15,6 @@ const getAllWithdrawalRequests = async (req, res) => {
         },
         {
           model: WithdrawalMethod,
-          attributes: ["id", "type", "bank_name", "account_number", "wallet_address"],
         },
       ],
       order: [["created_at", "DESC"]],
