@@ -56,7 +56,7 @@ const register = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(email, "EquityFX: Verify Your Email", emailHtml);
+    await sendEmail(email, "Verify Your Email", emailHtml);
 
     resSuccess(res, { message: "Registration successful! Please check your email to verify your account." }, 201);
   } catch (err) {
@@ -172,7 +172,7 @@ const forgotPassword = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(email, "EquityFX: Password Reset Request", emailHtml);
+    await sendEmail(email, "Password Reset Request", emailHtml);
 
     resSuccess(res, { message: "Password reset email sent." });
   } catch (err) {

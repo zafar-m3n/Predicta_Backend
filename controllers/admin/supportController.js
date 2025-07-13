@@ -106,7 +106,7 @@ const sendMessageToTicket = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(ticket.User.email, "EquityFX: New Reply to Your Support Ticket", emailHtml);
+    await sendEmail(ticket.User.email, "New Reply to Your Support Ticket", emailHtml);
 
     resSuccess(res, { message: "Reply sent successfully and user notified." }, 201);
   } catch (error) {
@@ -155,7 +155,7 @@ const closeTicket = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(ticket.User.email, "EquityFX: Your Support Ticket Has Been Closed", emailHtml);
+    await sendEmail(ticket.User.email, "Your Support Ticket Has Been Closed", emailHtml);
 
     resSuccess(res, { message: "Ticket closed successfully and user notified." });
   } catch (error) {

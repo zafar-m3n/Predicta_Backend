@@ -64,7 +64,7 @@ const createWithdrawalRequest = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(method.User.email, "EquityFX: Withdrawal Request Submitted", emailHtml);
+    await sendEmail(method.User.email, "Withdrawal Request Submitted", emailHtml);
 
     resSuccess(res, { message: "Withdrawal request submitted successfully." }, 201);
   } catch (error) {

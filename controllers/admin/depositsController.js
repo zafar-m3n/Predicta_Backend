@@ -237,7 +237,7 @@ const approveDepositRequest = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(depositRequest.User.email, "EquityFX: Deposit Request Approved", emailHtml);
+    await sendEmail(depositRequest.User.email, "Deposit Request Approved", emailHtml);
 
     resSuccess(res, { message: "Deposit request approved and wallet updated." });
   } catch (error) {
@@ -290,7 +290,7 @@ const rejectDepositRequest = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(depositRequest.User.email, "EquityFX: Deposit Request Rejected", emailHtml);
+    await sendEmail(depositRequest.User.email, "Deposit Request Rejected", emailHtml);
 
     resSuccess(res, { message: "Deposit request rejected and user notified." });
   } catch (error) {

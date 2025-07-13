@@ -82,7 +82,7 @@ const approveWithdrawalRequest = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(withdrawalRequest.User.email, "EquityFX: Withdrawal Request Approved", emailHtml);
+    await sendEmail(withdrawalRequest.User.email, "Withdrawal Request Approved", emailHtml);
 
     resSuccess(res, { message: "Withdrawal request approved and wallet updated." });
   } catch (error) {
@@ -135,7 +135,7 @@ const rejectWithdrawalRequest = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(withdrawalRequest.User.email, "EquityFX: Withdrawal Request Rejected", emailHtml);
+    await sendEmail(withdrawalRequest.User.email, "Withdrawal Request Rejected", emailHtml);
 
     resSuccess(res, { message: "Withdrawal request rejected and user notified." });
   } catch (error) {

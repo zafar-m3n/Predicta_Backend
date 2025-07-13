@@ -82,7 +82,7 @@ const createDepositRequest = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(user.email, "EquityFX: Deposit Request Submitted", emailHtml);
+    await sendEmail(user.email, "Deposit Request Submitted", emailHtml);
 
     resSuccess(res, { message: "Deposit request submitted successfully." }, 201);
   } catch (error) {

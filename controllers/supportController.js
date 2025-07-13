@@ -57,7 +57,7 @@ const createTicket = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(user.email, "EquityFX: Support Ticket Submitted", emailHtml);
+    await sendEmail(user.email, "Support Ticket Submitted", emailHtml);
 
     resSuccess(res, { message: "Support ticket created successfully.", ticket_id: ticket.id }, 201);
   } catch (error) {
@@ -173,7 +173,7 @@ const sendMessageToTicket = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(ticket.User.email, "EquityFX: Support Ticket Reply Received", emailHtml);
+    await sendEmail(ticket.User.email, "Support Ticket Reply Received", emailHtml);
 
     resSuccess(res, { message: "Reply sent successfully." }, 201);
   } catch (error) {

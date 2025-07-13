@@ -102,7 +102,7 @@ const uploadKycDocument = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(user.email, "EquityFX: KYC Document Submitted", emailHtml);
+    await sendEmail(user.email, "KYC Document Submitted", emailHtml);
 
     resSuccess(res, { message: "KYC document uploaded successfully and pending review." }, 201);
   } catch (error) {

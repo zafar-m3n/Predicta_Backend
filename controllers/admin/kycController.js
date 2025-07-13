@@ -83,7 +83,7 @@ const approveKycDocument = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(kycDoc.User.email, "EquityFX: KYC Document Approved", emailHtml);
+    await sendEmail(kycDoc.User.email, "KYC Document Approved", emailHtml);
 
     resSuccess(res, { message: "KYC document approved and user notified." });
   } catch (error) {
@@ -143,7 +143,7 @@ const rejectKycDocument = async (req, res) => {
       </div>
     `;
 
-    await sendEmail(kycDoc.User.email, "EquityFX: KYC Document Rejected", emailHtml);
+    await sendEmail(kycDoc.User.email, "KYC Document Rejected", emailHtml);
 
     resSuccess(res, { message: "KYC document rejected and user notified." });
   } catch (error) {
