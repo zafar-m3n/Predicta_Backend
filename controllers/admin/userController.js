@@ -5,7 +5,7 @@ const { resSuccess, resError } = require("../../utils/responseUtil");
 // Create a new user
 const createUser = async (req, res) => {
   try {
-    const { full_name, email, phone_number, country_code, password, role } = req.body;
+    const { full_name, email, phone_number, country_code, password, role, promo_code } = req.body;
 
     if (!full_name || !email || !password) {
       return resError(res, "Full name, email, and password are required.", 400);
@@ -27,6 +27,7 @@ const createUser = async (req, res) => {
       password_hash,
       role: role || "client",
       email_verified: false,
+      promo_code: promo_code || null,
     });
 
     resSuccess(res, { message: "User created successfully.", user: newUser }, 201);
@@ -91,7 +92,7 @@ const getUserById = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { full_name, email, phone_number, country_code, role, email_verified, password } = req.body;
+    const { full_name, email, phone_number, country_code, role, email_verified, password, promo_code } = req.body;
 
     const user = await User.findByPk(id);
     if (!user) {
@@ -112,6 +113,7 @@ const updateUser = async (req, res) => {
     if (country_code !== undefined) user.country_code = country_code;
     if (role !== undefined) user.role = role;
     if (email_verified !== undefined) user.email_verified = email_verified;
+    if (promo_code !== undefined) user.promo_code = promo_code;
 
     if (password) {
       const salt = await bcrypt.genSalt(10);

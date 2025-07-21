@@ -7,7 +7,15 @@ const { resSuccess, resError } = require("../utils/responseUtil");
 const getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: ["id", "full_name", "email", "phone_number", "country_code", "role"],
+      attributes: [
+        "id",
+        "full_name",
+        "email",
+        "phone_number",
+        "country_code",
+        "role",
+        "promo_code",
+      ],
     });
 
     if (!user) {
