@@ -33,6 +33,10 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    promo_code: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
     role: {
       type: DataTypes.ENUM("client", "admin"),
       defaultValue: "client",
