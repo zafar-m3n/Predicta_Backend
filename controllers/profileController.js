@@ -7,15 +7,7 @@ const { resSuccess, resError } = require("../utils/responseUtil");
 const getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: [
-        "id",
-        "full_name",
-        "email",
-        "phone_number",
-        "country_code",
-        "role",
-        "promo_code",
-      ],
+      attributes: ["id", "full_name", "email", "phone_number", "country_code", "role", "promo_code"],
     });
 
     if (!user) {
@@ -90,12 +82,12 @@ const uploadKycDocument = async (req, res) => {
     };
     const documentTypeLabel = documentTypeMap[document_type] || "KYC Document";
 
-    const logoUrl = "https://equityfx.co.uk/assets/equityfxlogo-C8QlocGu.jpg";
+    const logoUrl = "https://predicta.tfxe.live/assets/logo-Dxmm5dvk.png";
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; color: #333; background-color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
         <div style="margin-bottom: 20px;">
-          <img src="${logoUrl}" alt="EquityFX Logo" style="max-width: 150px; height: auto;" />
+          <img src="${logoUrl}" alt="Predicta Traders Logo" style="max-width: 150px; height: auto;" />
         </div>
         <h2 style="color: #0a0a0a;">Hello ${user.full_name},</h2>
         <p style="font-size: 15px; line-height: 1.6;">
@@ -105,7 +97,7 @@ const uploadKycDocument = async (req, res) => {
           You will be notified once the verification process is complete. Thank you for helping us keep your account secure.
         </p>
         <p style="margin-top: 30px; font-size: 14px; color: #555;">
-          — The EquityFX Team
+          — The Predicta Traders Team
         </p>
       </div>
     `;

@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (to, subject, html) => {
   try {
     await transporter.sendMail({
-      from: `"EquityFX" <${process.env.NODE_TRADERSROOM_EMAIL_USER}>`,
+      from: `"Predicta Traders" <${process.env.NODE_TRADERSROOM_EMAIL_USER}>`,
       to,
       subject,
       html,
