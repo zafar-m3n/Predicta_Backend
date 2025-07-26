@@ -26,7 +26,7 @@ const createUser = async (req, res) => {
       country_code,
       password_hash,
       role: role || "client",
-      email_verified: false,
+      email_verified: true,
       promo_code: promo_code || null,
     });
 
